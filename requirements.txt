@@ -26,3 +26,6 @@ numpy
 xlrd
 xlwt
 tqdm>=4.10.0
+scikit-learn
+networkx
+pygraphviz

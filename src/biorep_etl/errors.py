@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Provide error classes for biorep-etl."""
+"""Provide error classes for biorep_etl."""
 
 # Imports
 
@@ -11,11 +11,11 @@ __email__ = "w.gus.dunn@gmail.com"
 
 
 
-class Biorep-etlError(Exception):
+class BiorepEtlError(Exception):
 
-    """Base error class for biorep-etl."""
+    """Base error class for biorep_etl."""
 
 
-class ValidationError(Biorep-etlError):
+class ValidationError(BiorepEtlError):
 
     """Raise when a validation/sanity check comes back with unexpected value."""
