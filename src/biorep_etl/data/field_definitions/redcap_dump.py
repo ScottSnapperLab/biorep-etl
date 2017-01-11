@@ -14,7 +14,7 @@ from munch import Munch
 
 import engarde.decorators as ed
 
-import biorep_etl.data.load_recode as loading
+from biorep_etl.data import load_recode as loading
 import biorep_etl.errors as e
 
 # Metadata

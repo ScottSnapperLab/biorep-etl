@@ -45,6 +45,7 @@ def load_data_dict(data_dict_):
 def load_redcap_dump(data_):
     """Return loaded, recode, and validated dump table."""
     dtypes = {'samplenumber': np.object,
+              'mrn': np.object,
               'biorepidnumber': np.object,}
     
     return pd.read_csv(data_, dtype=dtypes, index_col=0)
