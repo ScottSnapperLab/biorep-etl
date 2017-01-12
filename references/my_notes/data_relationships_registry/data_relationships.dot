@@ -1,0 +1,87 @@
+strict digraph  {
+    graph [bgcolor=white, margin=0, rankdir=LR, label="Biorepository Data Relationships", fontname=Cantarell ];
+    
+    subgraph {
+        node [shape=box, style=rounded, fontname=Cantarell, fontsize=11, penwidth=2, color="#50D0FF"];
+        rank = same; subject;
+    }
+    
+    node [shape=diamond, style=rounded, fontname=Cantarell, fontsize=11, penwidth=2, color="#DC112A"];
+        {
+            node [label="group_of"] __CONSISTS_OF__from_family
+            node [label="has"]
+            __HAS__from_fam_member
+            __HAS__from_family
+            __HAS__from_labs_info
+            __HAS__from_sample
+            __HAS__from_subject
+            __HAS__from_veoibd_profile
+            node [label="is_part_of"] __IS_PART_OF__from_subject
+            node [label="may_be"] __MAY_BE__from_fam_members
+            node [label="may_have"] __MAY_HAVE__from_subject
+            node [label="provides"] __PROVIDES__from_subject
+        }
+    node [shape=box, style=rounded, fontname=Cantarell, fontsize=11, penwidth=2, color="#50D0FF"];
+    edge [penwidth=2, color=grey, fontname=Cantarell, labelfloat=false];
+    
+
+
+    
+    
+    
+    labs_info -> __HAS__from_labs_info -> labs_date;
+    labs_info -> __HAS__from_labs_info -> labs_kind;
+    labs_info -> __HAS__from_labs_info -> labs_value;
+    labs_info -> __HAS__from_labs_info -> labs_value_unit;
+    
+    sample -> __HAS__from_sample -> crf;
+    sample -> __HAS__from_sample -> sample_kind;
+    sample -> __HAS__from_sample -> longitudinal_status;
+    sample -> __HAS__from_sample -> record_id;
+    sample -> __HAS__from_sample -> sample_number;
+    sample -> __HAS__from_sample -> label_on_sample;
+    sample -> __HAS__from_sample -> labs_info;
+    sample -> __HAS__from_sample -> drug_info;
+    sample -> __HAS__from_sample -> hbi_info;
+    sample -> __HAS__from_sample -> sccai_info;
+    sample -> __HAS__from_sample -> pucai_info;
+    sample -> __HAS__from_sample -> crf_date;
+    sample -> __HAS__from_sample -> completed_by;
+    sample -> __HAS__from_sample -> crf_note;
+    
+    subject -> __IS_PART_OF__from_subject -> family;
+    subject -> __PROVIDES__from_subject -> sample;
+    subject -> __HAS__from_subject -> ibd_dx;
+    subject -> __HAS__from_subject -> nonibd_dx;
+    subject -> __HAS__from_subject -> subject_kind;
+    subject -> __HAS__from_subject -> proband_status;
+    subject -> __HAS__from_subject -> gender;
+    subject -> __HAS__from_subject -> dob;
+    subject -> __HAS__from_subject -> consent_history;
+    subject -> __HAS__from_subject -> ibd_immunodeficiency;
+    subject -> __HAS__from_subject -> nonibd_immunodeficiency;
+    subject -> __HAS__from_subject -> psc_status;
+    subject -> __MAY_HAVE__from_subject -> chb_id;
+    subject -> __MAY_HAVE__from_subject -> veoibd_profile;
+    
+    family -> __CONSISTS_OF__from_family -> fam_member;
+    family -> __HAS__from_family -> veoibd_designation;
+    
+    veoibd_profile -> __HAS__from_veoibd_profile -> symptom_onset;
+    veoibd_profile -> __HAS__from_veoibd_profile -> date_of_diagnosis;
+    veoibd_profile -> __HAS__from_veoibd_profile -> consanguinity_status;
+    veoibd_profile -> __HAS__from_veoibd_profile -> oral_perianal_kind;
+    veoibd_profile -> __HAS__from_veoibd_profile -> six_mo_nsaid_status;
+    veoibd_profile -> __HAS__from_veoibd_profile -> six_mo_nsaid_doses;
+    
+    fam_member -> __MAY_BE__from_fam_members -> subject;
+    fam_member -> __HAS__from_fam_member -> is_a_subject_status;
+    fam_member -> __HAS__from_fam_member -> fam_gi_dx;
+    fam_member -> __HAS__from_fam_member -> relation_to_proband;
+    
+    
+    
+
+}
+
+
