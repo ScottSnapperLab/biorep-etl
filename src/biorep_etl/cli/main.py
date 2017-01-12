@@ -15,8 +15,8 @@ import ruamel.yaml as yaml
 import click
 from click import echo
 
-import biorep-etl.cli.config as _config
-import biorep-etl.errors as e
+import biorep_etl.cli.config as _config
+import biorep_etl.errors as e
 
 
 # Metadata

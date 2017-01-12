@@ -2,7 +2,7 @@
 import setuptools
 
 setuptools.setup(
-    name="biorep-etl",
+    name="biorep_etl",
     version="0.0.1",
     url="git@github.com:ScottSnapperLab/biorep-etl.git",
 
@@ -28,7 +28,7 @@ setuptools.setup(
 
     entry_points={
     "console_scripts": [
-        "biorep-etl = biorep-etl.cli.main:run",
+        "biorep-etl = biorep_etl.cli.main:run",
         ]
     },
 )
