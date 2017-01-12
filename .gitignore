@@ -1,3 +1,11 @@
+
+
+# exclude data from source control by default
+/data/**/*.csv
+/data/**/*.xls*
+/data/**/*.html
+# !/data/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
@@ -75,5 +83,5 @@ target/
 # IPython NB Checkpoints
 .ipynb_checkpoints/
 
-# exclude data from source control by default
-/data/
+
+
