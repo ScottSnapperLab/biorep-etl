@@ -11,6 +11,8 @@ import networkx as nx
 
 from munch import Munch
 
+import biorep_etl.data.load_recode as loading
+
 # Metadata
 __author__ = "Gus Dunn"
 __email__ = "w.gus.dunn@gmail.com"
@@ -18,9 +20,7 @@ __email__ = "w.gus.dunn@gmail.com"
 EdgeLabel = namedtuple(typename='EdgeLabel', field_names=["n1", "n2", "label"], verbose=False, rename=False)
 
 # Functions
-def load_data_dict(data_dict_):
-    """Load data dict into df."""
-    return pd.read_csv(data_dict_)
+
     
 def make_edges(data_dict):
     """Return df with just columns that represent edges."""
@@ -28,20 +28,8 @@ def make_edges(data_dict):
               'Branching Logic (Show field only if...)':'branch_logic'}
     
     return data_dict[['Variable / Field Name','Branching Logic (Show field only if...)']].rename(columns=rename)
-    
-    
-def make_field_map(data_dict):
-    """Return Dict to translate field names and field labels."""
-    d = Munch()
-    field_names = data_dict['Variable / Field Name'].values
-    field_labels = data_dict['Field Label'].values
-    
-    d = Munch({k:v for k,v in zip(field_names, field_labels)})
-    d.update(Munch({d:l for d,l in zip(field_labels, field_names)}))
-    
-    return d
-    
-    
+
+
 def make_top_level_nodes_and_others(edges_raw):
     """Return dict of `top_level_nodes`,`lower_edges_raw`."""
     d = Munch()
@@ -91,10 +79,25 @@ def add_lower_edges(g,lower_edges_raw):
         
     
 def add_top_level_edges(g,top_level_nodes):
-    """Add top l;evel nodes top graph."""
+    """Add top level nodes top graph."""
     l = len(top_level_nodes)
     
     tle = zip(['start']*l,
               top_level_nodes)
     
     g.add_edges_from(ebunch=tle)
+
+
+def build_dag(data_dict_):
+    """Return the DAG as decoded from the data_dict csv file."""
+    data_dict = loading.load_data_dict(data_dict_)
+    g = nx.DiGraph()
+    
+    edges_raw = make_edges(data_dict)
+    nodes_raw = make_top_level_nodes_and_others(edges_raw)
+    
+    add_top_level_edges(g, top_level_nodes=nodes_raw.top_level_nodes)
+    # g.add_nodes_from(nodes=nodes_raw.top_level_nodes)
+    add_lower_edges(g,lower_edges_raw=nodes_raw.lower_edges_raw)
+    
+    return g
