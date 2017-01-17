@@ -4,9 +4,16 @@ library(RSQLite)
 file<-"./data/raw/SnapperGIBioreposito_DATA_2017-01-10_1643.csv"
 df<-read.csv(file, header = TRUE, sep = ",")
 
-#generate compound key for visit
+#generate compound key for visit entity
 df$vis.id<-paste(df$biorepidnumber,df$sample_date)
 vis.id<-df$vis.id
+
+#generate family and member id for subject entity
+fam<-as.character(format(round(df$biorepidnumber, digits =2)))
+fam<-as.data.frame(strsplit(fam, '[.]'))
+fam<-t(fam)
+df$family_id<-fam[,1]
+df$member_id<-fam[,2]
 
 #reference
 t<-as.data.frame(t(df))
@@ -22,7 +29,7 @@ t$V1<-id
 
 
 #create dataframe for Subject
-sub<-as.data.frame(df[c(5,9,10,12:34,36:51)])
+sub<-as.data.frame(df[c(5,9,10,12:34,36:51,215,216)])
 sub<-sub[!duplicated(sub),]
 
 #check for uniqueness of primary key
@@ -117,4 +124,7 @@ write.csv(vis, file = "./data/processed/visit.csv", row.names = F)
 # dbGetQuery(conn = database, "SELECT * FROM visit")
 # dbRemoveTable(database, "vis")
 
+#####################################################################################################################
+
+print("Finished.")
 ######################################################################################################################
