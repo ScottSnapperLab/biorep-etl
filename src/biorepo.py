@@ -28,22 +28,22 @@ print(df.shape)
 #df.to_csv("./data/processed/edit.csv")
 
 # create subject dataframe
-sub = df.iloc[:, np.r_[4, 8, 9, 12:33 , 35:50, 214, 215]]
+sub = df.iloc[:, np.r_[4, 8, 9, 11:34 , 35:51, 214, 215]]
 sub = sub.drop_duplicates()
-sub.to_csv("./data/processed/subject2.csv")
+sub.to_csv("./data/processed/subject2.csv", index = False)
 print("subject")
 print(sub.shape)
 
 # create sample dataframe
-sam = df.iloc[:, np.r_[0 : 2, 4, 5 : 7, 10, 55 : 125, 213]]
+sam = df.iloc[:, np.r_[0 : 3, 4, 5 : 8, 10, 55 : 126, 213]]
 sam = sam.drop_duplicates()
-sam.to_csv("./data/processed/sample2.csv")
+sam.to_csv("./data/processed/sample2.csv", index = False)
 print("sample")
 print(sam.shape)
 
 # create visit dataframe
-vis = df.iloc[:, np.r_[213, 4, 7, 1, 53, 54, 126 : 212]]
+vis = df.iloc[:, np.r_[213, 4, 7, 1, 53, 54, 126 : 213]]
 vis = vis.drop_duplicates()
-vis.to_csv("./data/processed/visit2.csv")
+vis.to_csv("./data/processed/visit2.csv", index = False)
 print("visit")
 print(vis.shape)
