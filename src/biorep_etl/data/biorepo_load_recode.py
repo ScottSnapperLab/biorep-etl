@@ -59,8 +59,10 @@ def init_load_data_and_labels(data_, data_dict_):
     data_dict = load_data_dict(data_dict_=data_dict_)
     required = rcd.req_cols(dd=data_dict)
     
-    loaded.data = load_redcap_dump(data_=data_).pipe(ck.none_missing,
-                                                     columns=required)
+    # loaded.data = load_redcap_dump(data_=data_).pipe(ck.none_missing,
+    #                                                  columns=required)
+    
+    loaded.data = load_redcap_dump(data_=data_)
     
     
     loaded.field_map = make_field_map(data_dict=data_dict)
