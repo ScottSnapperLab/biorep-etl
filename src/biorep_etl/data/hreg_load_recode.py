@@ -16,7 +16,7 @@ import engarde.decorators as ed
 import engarde.checks as ck
 
 
-import biorep_etl.data.field_definitions.redcap_dump as rcd
+import biorep_etl.data.field_definitions.hreg_redcap_dump as rcd
 import biorep_etl.errors as e
 
 # Metadata
