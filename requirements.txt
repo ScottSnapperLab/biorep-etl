@@ -30,3 +30,4 @@ scikit-learn
 networkx
 pygraphviz
 engarde
+pyparsing

@@ -11,7 +11,7 @@ import networkx as nx
 
 from munch import Munch
 
-import biorep_etl.data.load_recode as loading
+import biorep_etl.errors as e
 
 # Metadata
 __author__ = "Gus Dunn"
@@ -27,7 +27,7 @@ def make_edges(data_dict):
     rename = {'Variable / Field Name':'field_name',
               'Branching Logic (Show field only if...)':'branch_logic'}
     
-    return data_dict[['Variable / Field Name','Branching Logic (Show field only if...)']].rename(columns=rename)
+    return data_dict.reset_index()[['Variable / Field Name','Branching Logic (Show field only if...)']].rename(columns=rename)
 
 
 def make_top_level_nodes_and_others(edges_raw):
@@ -43,7 +43,12 @@ def make_top_level_nodes_and_others(edges_raw):
 
 def parse_branch_logic(logic):
     """Return `n1`, `label` based on a single branch logic string."""
-    n1, label = logic.replace('[','').replace(']','').replace("'","").split(' = ')
+    # try:
+    #     n1, label = logic.replace("'",'"').replace('[','').replace(']','').replace('"',"").replace(' = ',"=").split('=')
+    # except ValueError:
+    #     n1, label = logic.replace("'",'"').replace('[','').replace(']','').replace('"',"").replace(' = ',"=").split('=')
+    
+    n1, label = logic.replace("'",'"').replace('[','').replace(']','').replace('"',"").replace(' = ',"=").split('=')
     
     if '(' in n1:
         n1, label = n1.replace(')','').split('(')
@@ -88,9 +93,8 @@ def add_top_level_edges(g,top_level_nodes):
     g.add_edges_from(ebunch=tle)
 
 
-def build_dag(data_dict_):
-    """Return the DAG as decoded from the data_dict csv file."""
-    data_dict = loading.load_data_dict(data_dict_)
+def build_dag(data_dict):
+    """Return the DAG as decoded from the data_dict dataframe."""
     g = nx.DiGraph()
     
     edges_raw = make_edges(data_dict)
