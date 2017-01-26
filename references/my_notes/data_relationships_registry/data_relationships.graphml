@@ -1,0 +1,732 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<graphml xsi:schemaLocation="http://graphml.graphdrawing.org/xmlns/graphml http://www.yworks.com/xml/schema/graphml/1.0/ygraphml.xsd" xmlns="http://graphml.graphdrawing.org/xmlns/graphml" xmlns:y="http://www.yworks.com/xml/graphml" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <key for="node" id="d0" yfiles.type="nodegraphics"/>
+  <key for="node" id="d1" name="description" attr.type="string"/>
+  <key for="edge" id="d2" yfiles.type="nodegraphics"/>
+  <key for="edge" id="d3" name="description" attr.type="string"/>
+  <key for="graphml" id="d4" yfiles.type="resources"/>
+  <key for="node" id="d6" yfiles.type="nodegraphics"/>
+  <graph edgedefault="directed" parse.order="free" parse.edges="88" parse.nodes="55">
+    <node id="chb_id">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">chb_id</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="completed_by">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">completed_by</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="consanguinity_status">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">consanguinity_status</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="consent_history">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">consent_history</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="crf">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">crf</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="crf_date">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">crf_date</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="crf_note">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">crf_note</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="date_of_diagnosis">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">date_of_diagnosis</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="dob">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">dob</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="drug_info">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">drug_info</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="fam_gi_dx">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">fam_gi_dx</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="fam_member">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">fam_member</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="family">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">family</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="gender">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">gender</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="hbi_info">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">hbi_info</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="ibd_dx">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">ibd_dx</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="ibd_immunodeficiency">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">ibd_immunodeficiency</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="is_a_subject_status">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">is_a_subject_status</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="label_on_sample">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">label_on_sample</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="labs_date">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">labs_date</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="labs_info">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">labs_info</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="labs_kind">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">labs_kind</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="labs_value">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">labs_value</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="labs_value_unit">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">labs_value_unit</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="longitudinal_status">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">longitudinal_status</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="nonibd_dx">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">nonibd_dx</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="nonibd_immunodeficiency">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">nonibd_immunodeficiency</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="oral_perianal_kind">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">oral_perianal_kind</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="proband_status">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">proband_status</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="psc_status">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">psc_status</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="pucai_info">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">pucai_info</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="record_id">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">record_id</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="relation_to_proband">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">relation_to_proband</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="sample">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">sample</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="sample_kind">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">sample_kind</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="sample_number">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">sample_number</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="sccai_info">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">sccai_info</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="six_mo_nsaid_doses">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">six_mo_nsaid_doses</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="six_mo_nsaid_status">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">six_mo_nsaid_status</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="subject_kind">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">subject_kind</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="symptom_onset">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">symptom_onset</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="veoibd_designation">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">veoibd_designation</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <node id="veoibd_profile">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c">veoibd_profile</y:NodeLabel>
+        </y:ShapeNode>
+      </data>
+    </node>
+    <!--GA (GraphAttrs {attrs = [BgColor [WC {wColor = X11Color White, weighting = Nothing}],Margin (DVal 0.0),RankDir FromLeft,Label (StrLabel "Biorepository Data Relationships"),FontName "Cantarell"]})-->
+    <!--NodeAttrs {attrs = [Shape BoxShape,Style [SItem Rounded []],FontName "Cantarell",FontSize 11.0,PenWidth 2.0,Color [WC {wColor = RGB {red = 80, green = 208, blue = 255}, weighting = Nothing}]]}-->
+    <!--GraphAttrs {attrs = [Rank SameRank]}-->
+    <node id="subject">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--GA (NodeAttrs {attrs = [Shape DiamondShape,Style [SItem Rounded []],FontName "Cantarell",FontSize 11.0,PenWidth 2.0,Color [WC {wColor = RGB {red = 220, green = 17, blue = 42}, weighting = Nothing}]]})-->
+    <!--NodeAttrs {attrs = [Label (StrLabel "group_of")]}-->
+    <node id="__CONSISTS_OF__from_family">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--NodeAttrs {attrs = [Label (StrLabel "has")]}-->
+    <node id="__HAS__from_fam_member">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <node id="__HAS__from_family">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <node id="__HAS__from_labs_info">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <node id="__HAS__from_sample">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <node id="__HAS__from_subject">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <node id="__HAS__from_veoibd_profile">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--NodeAttrs {attrs = [Label (StrLabel "is_part_of")]}-->
+    <node id="__IS_PART_OF__from_subject">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--NodeAttrs {attrs = [Label (StrLabel "may_be")]}-->
+    <node id="__MAY_BE__from_fam_members">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--NodeAttrs {attrs = [Label (StrLabel "may_have")]}-->
+    <node id="__MAY_HAVE__from_subject">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--NodeAttrs {attrs = [Label (StrLabel "provides")]}-->
+    <node id="__PROVIDES__from_subject">
+      <data key="d0">
+        <y:ShapeNode>
+          <y:Geometry height="30.0" width="30.0" x="0.0" y="0.0"/>
+          <y:Fill color="#FFFFCC" transparent="false"/>
+          <y:BotderStyle color="#000000" type="line" width="1.0"/>
+          <y:Shape type="ellipse"/>
+          <y:NodeLabel alignment="center" autoSizePolicy="content" hasBackgroundColor="false" modelName="internal" modelPosition="c"/>
+        </y:ShapeNode>
+      </data>
+      <data key="d1"/>
+    </node>
+    <!--GA (NodeAttrs {attrs = [Shape BoxShape,Style [SItem Rounded []],FontName "Cantarell",FontSize 11.0,PenWidth 2.0,Color [WC {wColor = RGB {red = 80, green = 208, blue = 255}, weighting = Nothing}]]})-->
+    <!--GA (EdgeAttrs {attrs = [PenWidth 2.0,Color [WC {wColor = X11Color Gray, weighting = Nothing}],FontName "Cantarell",LabelFloat False]})-->
+    <edge source="labs_info" target="__HAS__from_labs_info" id="labs_info__HAS__from_labs_info"/>
+    <edge source="__HAS__from_labs_info" target="labs_date" id="__HAS__from_labs_infolabs_date"/>
+    <edge source="labs_info" target="__HAS__from_labs_info" id="labs_info__HAS__from_labs_info"/>
+    <edge source="__HAS__from_labs_info" target="labs_kind" id="__HAS__from_labs_infolabs_kind"/>
+    <edge source="labs_info" target="__HAS__from_labs_info" id="labs_info__HAS__from_labs_info"/>
+    <edge source="__HAS__from_labs_info" target="labs_value" id="__HAS__from_labs_infolabs_value"/>
+    <edge source="labs_info" target="__HAS__from_labs_info" id="labs_info__HAS__from_labs_info"/>
+    <edge source="__HAS__from_labs_info" target="labs_value_unit" id="__HAS__from_labs_infolabs_value_unit"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="crf" id="__HAS__from_samplecrf"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="sample_kind" id="__HAS__from_samplesample_kind"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="longitudinal_status" id="__HAS__from_samplelongitudinal_status"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="record_id" id="__HAS__from_samplerecord_id"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="sample_number" id="__HAS__from_samplesample_number"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="label_on_sample" id="__HAS__from_samplelabel_on_sample"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="labs_info" id="__HAS__from_samplelabs_info"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="drug_info" id="__HAS__from_sampledrug_info"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="hbi_info" id="__HAS__from_samplehbi_info"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="sccai_info" id="__HAS__from_samplesccai_info"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="pucai_info" id="__HAS__from_samplepucai_info"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="crf_date" id="__HAS__from_samplecrf_date"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="completed_by" id="__HAS__from_samplecompleted_by"/>
+    <edge source="sample" target="__HAS__from_sample" id="sample__HAS__from_sample"/>
+    <edge source="__HAS__from_sample" target="crf_note" id="__HAS__from_samplecrf_note"/>
+    <edge source="subject" target="__IS_PART_OF__from_subject" id="subject__IS_PART_OF__from_subject"/>
+    <edge source="__IS_PART_OF__from_subject" target="family" id="__IS_PART_OF__from_subjectfamily"/>
+    <edge source="subject" target="__PROVIDES__from_subject" id="subject__PROVIDES__from_subject"/>
+    <edge source="__PROVIDES__from_subject" target="sample" id="__PROVIDES__from_subjectsample"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="ibd_dx" id="__HAS__from_subjectibd_dx"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="nonibd_dx" id="__HAS__from_subjectnonibd_dx"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="subject_kind" id="__HAS__from_subjectsubject_kind"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="proband_status" id="__HAS__from_subjectproband_status"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="gender" id="__HAS__from_subjectgender"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="dob" id="__HAS__from_subjectdob"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="consent_history" id="__HAS__from_subjectconsent_history"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="ibd_immunodeficiency" id="__HAS__from_subjectibd_immunodeficiency"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="nonibd_immunodeficiency" id="__HAS__from_subjectnonibd_immunodeficiency"/>
+    <edge source="subject" target="__HAS__from_subject" id="subject__HAS__from_subject"/>
+    <edge source="__HAS__from_subject" target="psc_status" id="__HAS__from_subjectpsc_status"/>
+    <edge source="subject" target="__MAY_HAVE__from_subject" id="subject__MAY_HAVE__from_subject"/>
+    <edge source="__MAY_HAVE__from_subject" target="chb_id" id="__MAY_HAVE__from_subjectchb_id"/>
+    <edge source="subject" target="__MAY_HAVE__from_subject" id="subject__MAY_HAVE__from_subject"/>
+    <edge source="__MAY_HAVE__from_subject" target="veoibd_profile" id="__MAY_HAVE__from_subjectveoibd_profile"/>
+    <edge source="family" target="__CONSISTS_OF__from_family" id="family__CONSISTS_OF__from_family"/>
+    <edge source="__CONSISTS_OF__from_family" target="fam_member" id="__CONSISTS_OF__from_familyfam_member"/>
+    <edge source="family" target="__HAS__from_family" id="family__HAS__from_family"/>
+    <edge source="__HAS__from_family" target="veoibd_designation" id="__HAS__from_familyveoibd_designation"/>
+    <edge source="veoibd_profile" target="__HAS__from_veoibd_profile" id="veoibd_profile__HAS__from_veoibd_profile"/>
+    <edge source="__HAS__from_veoibd_profile" target="symptom_onset" id="__HAS__from_veoibd_profilesymptom_onset"/>
+    <edge source="veoibd_profile" target="__HAS__from_veoibd_profile" id="veoibd_profile__HAS__from_veoibd_profile"/>
+    <edge source="__HAS__from_veoibd_profile" target="date_of_diagnosis" id="__HAS__from_veoibd_profiledate_of_diagnosis"/>
+    <edge source="veoibd_profile" target="__HAS__from_veoibd_profile" id="veoibd_profile__HAS__from_veoibd_profile"/>
+    <edge source="__HAS__from_veoibd_profile" target="consanguinity_status" id="__HAS__from_veoibd_profileconsanguinity_status"/>
+    <edge source="veoibd_profile" target="__HAS__from_veoibd_profile" id="veoibd_profile__HAS__from_veoibd_profile"/>
+    <edge source="__HAS__from_veoibd_profile" target="oral_perianal_kind" id="__HAS__from_veoibd_profileoral_perianal_kind"/>
+    <edge source="veoibd_profile" target="__HAS__from_veoibd_profile" id="veoibd_profile__HAS__from_veoibd_profile"/>
+    <edge source="__HAS__from_veoibd_profile" target="six_mo_nsaid_status" id="__HAS__from_veoibd_profilesix_mo_nsaid_status"/>
+    <edge source="veoibd_profile" target="__HAS__from_veoibd_profile" id="veoibd_profile__HAS__from_veoibd_profile"/>
+    <edge source="__HAS__from_veoibd_profile" target="six_mo_nsaid_doses" id="__HAS__from_veoibd_profilesix_mo_nsaid_doses"/>
+    <edge source="fam_member" target="__MAY_BE__from_fam_members" id="fam_member__MAY_BE__from_fam_members"/>
+    <edge source="__MAY_BE__from_fam_members" target="subject" id="__MAY_BE__from_fam_memberssubject"/>
+    <edge source="fam_member" target="__HAS__from_fam_member" id="fam_member__HAS__from_fam_member"/>
+    <edge source="__HAS__from_fam_member" target="is_a_subject_status" id="__HAS__from_fam_memberis_a_subject_status"/>
+    <edge source="fam_member" target="__HAS__from_fam_member" id="fam_member__HAS__from_fam_member"/>
+    <edge source="__HAS__from_fam_member" target="fam_gi_dx" id="__HAS__from_fam_memberfam_gi_dx"/>
+    <edge source="fam_member" target="__HAS__from_fam_member" id="fam_member__HAS__from_fam_member"/>
+    <edge source="__HAS__from_fam_member" target="relation_to_proband" id="__HAS__from_fam_memberrelation_to_proband"/>
+  </graph>
+  <data key="d4">
+    <y:Resources/>
+  </data>
+</graphml>
+
