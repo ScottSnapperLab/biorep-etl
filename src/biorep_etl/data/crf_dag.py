@@ -22,13 +22,7 @@ __email__ = "w.gus.dunn@gmail.com"
 # Constants
 EdgeLabel = namedtuple(typename='EdgeLabel', field_names=["n1", "n2", "label"], verbose=False, rename=False)
 
-# StartNodeAndLabel = namedtuple(typename, field_names, verbose=False, rename=False)
-
-# branch_logic_parser = build_branch_logic_parser()
-
 # Functions
-
-    
 def make_edges(data_dict):
     """Return df with just columns that represent edges."""
     rename = {'Variable / Field Name':'field_name',
@@ -47,20 +41,6 @@ def make_top_level_nodes_and_others(edges_raw):
     d.lower_edges_raw = edges_raw[~tln]
     
     return  d
-
-# def parse_branch_logic_old(logic):
-#     """Return `n1`, `label` based on a single branch logic string."""
-#     # try:
-#     #     n1, label = logic.replace("'",'"').replace('[','').replace(']','').replace('"',"").replace(' = ',"=").split('=')
-#     # except ValueError:
-#     #     n1, label = logic.replace("'",'"').replace('[','').replace(']','').replace('"',"").replace(' = ',"=").split('=')
-#
-#     n1, label = logic.replace("'",'"').replace('[','').replace(']','').replace('"',"").replace(' = ',"=").split('=')
-#
-#     if '(' in n1:
-#         n1, label = n1.replace(')','').split('(')
-#
-#     return n1, label
     
 
 
@@ -79,26 +59,7 @@ def parse_branch_logic(logic, n2):
     for v in parser.variables:
         yield EdgeLabel(":".join(str(i) for i in v), n2, "") # TODO: add actual labels
 
-# def make_lower_edges_old(lower_edges_raw):
-#     """Yield ``EdgeLabel`` namedtuples ("n1", "n2", "label") for the lower edges based on branch logic."""
-#     field_name, branch_logic = 0,1
-#
-#     for row in lower_edges_raw.values:
-#
-#         try:
-#             n1, label = parse_branch_logic(logic=row[branch_logic])
-#             n2 = row[field_name]
-#             yield EdgeLabel(n1=n1,n2=n2,label=label)
-#
-#         except ValueError as exc:
-#             if ' or ' in row[branch_logic]:
-#                 logics = [l for l in row[branch_logic].split(' or ')]
-#                 n2 = row[field_name]
-#
-#                 for parsed_logic in [parse_branch_logic(logic=l) for l in logics]:
-#                     n1, label = parsed_logic
-#                     yield EdgeLabel(n1=n1,n2=n2,label=label)
-            
+
 def make_lower_edges(lower_edges_raw):
     """Yield ``EdgeLabel`` namedtuples ("n1", "n2", "label") for the lower edges based on branch logic."""
     field_name, branch_logic = 0,1
