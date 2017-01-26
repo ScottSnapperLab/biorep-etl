@@ -15,8 +15,6 @@ from munch import Munch
 import engarde.decorators as ed
 import engarde.checks as ck
 
-import pendulum as pdm
-
 import biorep_etl.data.field_definitions.hreg_redcap_dump as rcd
 import biorep_etl.data.parsers as parsers
 import biorep_etl.errors as e
@@ -73,7 +71,57 @@ def make_choice_maps(data_dict):
     
     return maps
     
+def make_redcap_validation_table(data_dict):
+    """Return a dataframe representing the validation columns of the ``data_dict``.
     
+    Relevant columns: ['Text Validation Type OR Show Slider Number',
+                       'Text Validation Min',
+                       'Text Validation Max']
+                       
+    Modifications:
+        - Columns renamed to: ['type','min','max'].
+        - Rows where all values are null are dropped.
+        - Columns where 'type' == null are corrected as rationally as possible.
+        - Values in the ['min','max'] columns are cast into correct types where possible.
+    
+    Args:
+        data_dict (pandas.DataFrame): Loaded data_dict object.
+        
+    Returns:
+        pandas.DataFrame
+    """
+    # Set up constants and stuff
+    ## Missing type info
+    fix = Munch()
+    fix.labs = {'alb', 'crp', 'esr', 'hct', 'plt', 'wbc'}
+    
+    ## Convertion map for max/min values
+    type_conversions = Munch()
+    type_conversions.date_mdy = pd.Timestamp
+    type_conversions.integer = np.int64
+    type_conversions.number = np.float64
+    type_conversions.number_1dp = np.float64
+    type_conversions.date_dmy = pd.Timestamp
+    
+    
+    # Subset and rename the target columns
+    validation = data_dict[['Text Validation Type OR Show Slider Number','Text Validation Min','Text Validation Max']].dropna(how='all')
+    validation.columns = ['type','min','max']
+    
+    # fix the null typed rows
+    ## lab values should be numbers
+    validation.loc[list(fix.labs),'type'] = 'number'
+    
+    # recast the min/max values as appropriate (IGNORING nulls for now).
+    for typ,cast_func in type_conversions.items():
+        idxs = validation.query(""" type == '{typ}' """.format(typ=typ)).index
+        
+        validation.loc[idxs,'min'] = validation.loc[idxs,'min'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
+        validation.loc[idxs,'max'] = validation.loc[idxs,'max'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
+    
+    
+    return validation
+
 
 def load_data_dict(data_dict_):
     """Load data dict into df."""
@@ -197,22 +245,20 @@ def load_redcap_dump(data_, data_dict):
     return data.set_index(['subid','redcap_event_name']).sort_index(level='subid')
 
 
-def load_all_and_labels(data_, data_dict_):
+def load_all(data_, data_dict_):
     """Return Munch obj containing the loaded and verified data dump and the field_map."""
-    loaded = Munch()
+    m = Munch()
     
-    data_dict = load_data_dict(data_dict_=data_dict_)
-    required = rcd.req_cols(dd=data_dict)
+    m.data_dict = load_data_dict(data_dict_=data_dict_)
+    m.required_columns = rcd.req_cols(dd=m.data_dict)
     
-    loaded.data = load_redcap_dump(data_=data_)
+    m.field_map = make_field_map(data_dict=m.data_dict)
+    m.choices_map = make_choice_maps(data_dict=m.data_dict)
+    m.validation_table = make_redcap_validation_table(data_dict=m.data_dict)
     
+    m.data = load_redcap_dump(data_=data_, data_dict=m.data_dict)
     
-    loaded.field_map = make_field_map(data_dict=data_dict)
-    
-    
-
-    
-    return loaded
+    return m
     
     
 
@@ -246,7 +292,7 @@ def cast_column_as_date(df, col):
         df (pandas.DataFrame): a dataframe.
         col (str): column name in ``df`` to be re-cast.
     """
-    df.loc[:,col] = df[col].apply(cast_func_ignore_nulls, f=pdm.parse)
+    df.loc[:,col] = df[col].apply(cast_func_ignore_nulls, f=pd.Timestamp)
 
 
 def cast_column_as_category(df, col):
