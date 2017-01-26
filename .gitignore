@@ -6,6 +6,11 @@
 /data/**/*.html
 # !/data/
 
+# exclude notebooks and reports from source control by default
+/notebooks/
+/reports/
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
