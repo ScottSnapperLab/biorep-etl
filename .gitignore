@@ -1,10 +1,15 @@
 
 
 # exclude data from source control by default
-/data/**/*.csv
+/data/**/*.csv*
 /data/**/*.xls*
 /data/**/*.html
 # !/data/
+
+# exclude notebooks and reports from source control by default
+/notebooks/
+/reports/
+
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

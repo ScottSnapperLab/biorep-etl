@@ -4,524 +4,353 @@
 # Imports
 import os
 from pathlib import Path
+from collections import defaultdict
 import logging
 logger = logging.getLogger(__name__)
 
 import pandas as pd
 import numpy as np
 
-from munch import Munch
+from munch import Munch, munchify
 
+import engarde.decorators as ed
+import engarde.checks as ck
+
+import biorep_etl.data.parsers as parsers
 import biorep_etl.errors as e
 
 # Metadata
 __author__ = "Gus Dunn"
 __email__ = "w.gus.dunn@gmail.com"
 
+# Constants
+def tree():
+    return defaultdict(tree)
 
-# functions
-def init_load_data_and_labels(data_, labels_):
-    loaded = Munch()
+
+# Classes
+class BaseRedCapData(object):
+    """Organize the common loading, preparation, and storing of RedCap data dumps."""
     
-    loaded.data = pd.read_csv(data_)
-    labels = pd.read_csv(labels_)
+    conf = None
     
-    loaded.conv_labels = Munch({d:l for d,l in zip(loaded.data.columns.values, labels.columns.values)})
-    loaded.conv_labels.update(Munch({d:l for d,l in zip(labels.columns.values, loaded.data.columns.values)}))
+    def __init__(self, data_path, data_dict_path):
+        """Load, recode, and verify various sets of information related to a RedCap dump.
+
+        Args:
+            data_path (Path): Location of redcap csv dump.
+            data_dict_path (Path): Location of data_dict csv.
+        """
+        self._load_data_dict(data_dict_path=data_dict_path)
+        self._make_required_columns()
+        self._infer_crude_dtypes(data_path=data_path)
+        self._make_field_map()
+        self._make_choice_maps()
+        self._make_redcap_validation_table()
+        self._load_redcap_dump(data_path=data_path)
+        
+
+
+    def _make_required_columns(self):
+        """Return list of columns that are required."""
+        self.required_columns = list(self.data_dict[self.data_dict['Required Field?'] == 'y'].index.values)
+
+    def _load_data_dict(self, data_dict_path):
+        """Load data dict into dataframe."""
+        self.data_dict = pd.read_csv(data_dict_path, index_col=0)
+
+    def _make_field_map(self):
+        """Return Dict to translate field names and field labels."""
+        d = Munch()
+        field_names = self.data_dict.reset_index()['Variable / Field Name'].values
+        field_labels = self.data_dict['Field Label'].values
+
+        # add the forward relationships
+        d = Munch({f_name: f_label for f_name, f_label in zip(field_names, field_labels)})
+
+        # add the reverse relationships
+        d.update(Munch({f_label: f_name for f_label, f_name in zip(field_labels, field_names)}))
+
+        self.field_map = d
+
+    def _make_choice_maps(self):
+        """Return dict of dicts to translate ``int`` values to their meanings.
+
+        Generally, the columns will be those whose data type is categorical.
+        Examples: 'prior_protocol_number', 'gender', etc.
+
+
+        Returns:
+            Munch: dict of dicts -> key1 = column_names, key2 = ``int``, value = choice text.
+        """
+        # remove any column_names that have "field type" == 'calc'
+        choice_strings = self.data_dict[self.data_dict['Field Type'] != 'calc']
+
+        # This is all items in the choice definitions column, that are not null, indexed by the data column they pertain to.
+        choice_strings = choice_strings[choice_strings['Choices, Calculations, OR Slider Labels'].notnull()][
+            'Choices, Calculations, OR Slider Labels']
+
+        # Add first level of tree (keys=col_names and vals=Munch())
+        maps = Munch({col: Munch() for col in choice_strings.index.values})
+
+        # Create parser for choice strings
+        choices = parsers.build_choices_parser()
+
+        # add second level of tree "maps.col_name" (keys="choice_integer" and vals="choice text")
+        for col in maps.keys():
+            parsed_choices = choices.parseString(choice_strings[col]).asList()
+            maps[col].update({int_: txt_ for int_, txt_ in parsed_choices})
+
+        self.choices_map = maps
+        
+    def _infer_crude_dtypes(self, data_path):
+        """Use data_dict to infer correct data types for each data column.
+
+        Args:
+            data_path (Path | str): Location of redcap data dump.
+
+        Returns:
+            Munch: ``keys in ['','']``
+        """
+        # Define mapping from redcap type to np.dtype
+        rc2np = Munch()
+        rc2np.radio = np.float64
+        rc2np.text = np.object
+        rc2np.checkbox = np.float64
+        rc2np.dropdown = np.float64
+        rc2np.yesno = np.float64
+        rc2np.descriptive = np.object
+        rc2np.calc = np.float64
+        # this is a special case for certain cols NOT present in the data_dict (see var use_np_objs below)
+        rc2np.category = np.object
+
+        # Get list of data_col_names
+        try:
+            data_col_names = data_path.open().readline().strip('\n').split(',')
+        except AttributeError:
+            data_col_names = Path(data_path).open().readline().strip('\n').split(',')
+
+        # Get redcap dtypes for each row of data_dict
+        redcap_types = self.data_dict['Field Type']
+
+        # Use redcap_types + data_col_names to associate a reasonible dtype
+        col_redcap_types = Munch()
+
+        ## distribute redcap_type to each col
+        for col in data_col_names:
+            try:
+                col_redcap_types[col] = redcap_types[col.split('___')[0]]
+            except KeyError as exc:
+                # TODO: make use_category robust to different redcap sources
+                use_category = self.conf.INFER_CRUDE_DTYPES.USE_CATEGORY
+
+                missing_key = exc.args[0]
+                if missing_key in use_category:
+                    col_redcap_types[col] = 'category'
+                else:
+                    raise exc
+
+        # Set up return dict
+        crude_dtypes = Munch()
+        crude_dtypes.redcap_dtypes = col_redcap_types
+        crude_dtypes.numpy_dtypes = Munch({col_name: rc2np[val] for col_name, val in col_redcap_types.items()})
+
+        self.crude_dtypes = crude_dtypes
+        
+
+    def _make_redcap_validation_table(self):
+        """Return a dataframe representing the validation columns of the ``data_dict``.
+
+        Relevant columns: ['Text Validation Type OR Show Slider Number',
+                           'Text Validation Min',
+                           'Text Validation Max']
+
+        Modifications:
+            - Columns renamed to: ['type','min','max'].
+            - Rows where all values are null are dropped.
+            - Columns where 'type' == null are corrected as rationally as possible.
+            - Values in the ['min','max'] columns are cast into correct types where possible.
+
+        Returns:
+            pandas.DataFrame
+        """
+        # Set up constants and stuff
+        ## Missing type info
+        missing_rcap_type = self.conf.MAKE_REDCAP_VALIDATION_TABLE.MISSING_RCAP_TYPE
+
+        ## Conversion map for max/min values
+        type_conversions = Munch()
+        type_conversions.date_mdy = pd.Timestamp
+        type_conversions.integer = np.int64
+        type_conversions.number = np.float64
+        type_conversions.number_1dp = np.float64
+        type_conversions.date_dmy = pd.Timestamp
+
+        # Subset and rename the target columns
+        validation = self.data_dict[['Text Validation Type OR Show Slider Number', 'Text Validation Min', 'Text Validation Max']].dropna(how='all')
+        validation.columns = ['type', 'min', 'max']
+
+        # fix the null typed rows
+        ## lab values should be numbers for example
+        for rcap_type, col_names in missing_rcap_type.items():
+            validation.loc[col_names, 'type'] = rcap_type
+
+        # recast the min/max values as appropriate (IGNORING nulls for now).
+        for typ, cast_func in type_conversions.items():
+            idxs = validation.query(""" type == '{typ}' """.format(typ=typ)).index
+
+            validation.loc[idxs, 'min'] = validation.loc[idxs, 'min'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
+            validation.loc[idxs, 'max'] = validation.loc[idxs, 'max'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
+
+        self.validation_table = validation
+
+
+
+    def _load_redcap_dump(self, data_path):
+        """Return loaded, recode, and validated dump table.
+
+        Args:
+            data_path (Path): Location of redcap data dump.
+            self.data_dict (pandas.DataFrame): Loaded data_dict object.
+
+        Returns:
+            pandas.DataFrame
+        """
+        index_cols = self.conf.LOAD_REDCAP_DUMP.INDEX_COLS
+        
+        data = pd.read_csv(data_path, dtype=self.crude_dtypes.numpy_dtypes, index_col=None)
+
+        recast_advanced_dtypes(data=data, data_dict=self.data_dict, crude_dtypes=self.crude_dtypes)
+
+        self.data = data
+        
+        if index_cols:
+            self.data.set_index(index_cols)
+
+
+class RegistryRedCapData(BaseRedCapData):
+    """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
+    conf = tree()
+    conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {'redcap_event_name',
+                                                  'registration_visit_complete',
+                                                  'baseline_and_follow_up_complete',
+                                                  'surgeries_complete',
+                                                  'hospitalizations_complete'}
+                                                  
+    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = ['alb', 'crp', 'esr', 'hct', 'plt', 'wbc']
     
-    return loaded
+    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = ['subid','redcap_event_name']
     
+    conf = munchify(conf)
+                                                  
+    def __init__(self, data_path, data_dict_path):
+        """Load, recode, and verify various sets of information related to a HARVARD_REGISTRY RedCap dump.
+
+        Args:
+            data_path (Path): Location of redcap csv dump.
+            data_dict_path (Path): Location of data_dict csv.
+        """
+        super().__init__(data_path, data_dict_path)
+        
+
+class BiorepoRedCapData(BaseRedCapData):
+    """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
+    conf = tree()
     
-
-def process_where_stored(row):
-    """Process where_stored."""
-    id_map = {
-        "where_stored___1": "Stored in the biorepository",
-        "where_stored___2": "Given to Camilla",
-        "where_stored___3": "Shipped to the Netherlands",
-        "where_stored___4": "Given to Pfizer",
-        "where_stored___7": "Shipped to Stanford",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    if row['where_stored___5'].upper() == "CHECKED":
-        out.append("other:{kind}".format(kind=row['other_shipped']))
-
-    if row['where_stored___6'].upper() == "CHECKED":
-        out.append("labmember:{kind}".format(kind=row['labmember']))
-
-    return [str(x) for x in out]
-
-def process_surgicallocations(row):
-    """Process surgicallocations."""
-    id_map = {
-        "surgicallocations___1": "Ileum inflamed",
-        "surgicallocations___9": "Ileum uninflamed",
-        "surgicallocations___2": "Cecum inflamed",
-        "surgicallocations___10": "Cecum uninflamed",
-        "surgicallocations___3": "Right colon inflamed",
-        "surgicallocations___11": "Right colon uninflamed",
-        "surgicallocations___21": "Hepatic flexure inflamed",
-        "surgicallocations___22": "Hepatic flexure uninflamed",
-        "surgicallocations___4": "Transverse colon inflamed",
-        "surgicallocations___12": "Transverse colon uninflamed",
-        "surgicallocations___23": "Splenic flexure inflamed",
-        "surgicallocations___24": "Splenic flexure uninflamed",
-        "surgicallocations___5": "Left colon inflamed",
-        "surgicallocations___13": "Left colon uninflamed",
-        "surgicallocations___6": "Sigmoid colon inflamed",
-        "surgicallocations___14": "Sigmoid colon uninflamed",
-        "surgicallocations___7": "Rectum inflamed",
-        "surgicallocations___15": "Rectum uninflamed",
-        "surgicallocations___8": "Appendix inflamed",
-        "surgicallocations___16": "Appendix uninflamed",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_stoolmedia(row):
-    """Process stoolmedia."""
-    id_map = {
-        "stoolmedia___1": "Freeze",
-        "stoolmedia___2": "RNA later",
-        "stoolmedia___3": "Ethanol",
-        "stoolmedia___4": "DNA Genotek",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_probiotic_type(row):
-    """Process probiotic_type."""
-    id_map = {
-         "probiotic_type___1": "VSL3",
-         "probiotic_type___2": "LGG (Culturelle)",
-         "probiotic_type___3": "Florastor",
-        }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    if row['probiotic_type___4'].upper() == "CHECKED":
-        out.append("other:{kind}".format(kind=row['other_probiotic']))
-
-    return [str(x) for x in out]
-
-
-def process_othermed_type(row):
-    """Process othermed_type."""
-    id_map = {
-        "othermed_type___2": "Thalidomide",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    if row['othermed_type___3'].upper() == "CHECKED":
-        out.append("other:{kind}".format(kind=row['othermed']))
-
-    return [str(x) for x in out]
-
-
-def process_otherbiologic_type(row):
-    """Process otherbiologic_type."""
-    id_map = {
-        "otherbiologic_type___1": "Natalizumab (Tysabri)",
-        "otherbiologic_type___2": "Ustekinumab (Stelara)",
-        "otherbiologic_type___3": "Vedolizumab (Entyvio)",
-
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_oral_perianal(row):
-    """Process oral_perianal."""
-    id_map = {
-        "oral_perianal___1": "Oral",
-        "oral_perianal___2": "Perianal",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_immunomodulator_type(row):
-    """Process immunomodulator_type."""
-    id_map = {
-        "immunomodulator_type___1": "6-mercaptopurine (6-MP)",
-        "immunomodulator_type___2": "Azathioprine (Imuran)",
-        "immunomodulator_type___3": "Methotrexate (Folex, Rheumatrex, Mexate)",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-
-def process_glucocorticoid_type(row):
-    """Process glucocorticoid_type."""
-    id_map = {
-        "glucocorticoid_type___1": "Budesonide (Entocort)",
-        "glucocorticoid_type___2": "Hydrocortisone enema (Cortenema, Colocort, Cortifoam)",
-        "glucocorticoid_type___3": "Methylprednisolone (Solumedrol)",
-        "glucocorticoid_type___4": "Prednisone, prednisolone (Prelone)",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-
-def process_familymember_ibd(row):
-    """Process familymember_ibd."""
-    id_map = {
-        "familymember_ibd___1": "Mother",
-        "familymember_ibd___2": "Father",
-        "familymember_ibd___3": "Full brother",
-        "familymember_ibd___4": "Full sister",
-        "familymember_ibd___5": "2nd degree relative",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    if row['familymember_ibd___6'].upper() == "CHECKED":
-        out.append("other:{kind}".format(kind=row['other_relative']))
-
-    return [str(x) for x in out]
-
-def process_calcineurin_type(row):
-    """Process calcineurin_type."""
-    id_map = {
-        "calcineurin_type___1": "Cyclosporine",
-        "calcineurin_type___2": "Tacrolimus",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_bxlocation(row):
-    """Process bxlocation."""
-    id_map = {
-        "bxlocation___1": "Stomach Antrum inflamed",
-        "bxlocation___11": "Stomach Antrum uninflamed",
-        "bxlocation___2": "Stomach Corpus inflamed",
-        "bxlocation___12": "Stomach Corpus uninflamed",
-        "bxlocation___3": "Duodenum inflamed",
-        "bxlocation___13": "Duodenum uninflamed",
-        "bxlocation___4": "Terminal Ileum inflamed",
-        "bxlocation___14": "Terminal Ileum uninflamed",
-        "bxlocation___5": "Cecum inflamed",
-        "bxlocation___15": "Cecum uninflamed",
-        "bxlocation___6": "Right colon inflamed",
-        "bxlocation___16": "Right colon uninflamed",
-        "bxlocation___21": "Hepatic flexure inflamed",
-        "bxlocation___22": "Hepatic flexure uninflamed",
-        "bxlocation___7": "Transverse colon inflamed",
-        "bxlocation___17": "Transverse colon uninflamed",
-        "bxlocation___23": "Splenic flexure inflamed",
-        "bxlocation___24": "Splenic flexure uninflamed",
-        "bxlocation___8": "Left colon inflamed",
-        "bxlocation___18": "Left colon uninflamed",
-        "bxlocation___9": "Sigmoid colon inflamed",
-        "bxlocation___19": "Sigmoid colon uninflamed",
-        "bxlocation___20": "Rectum inflamed",
-        "bxlocation___10": "Rectum uninflamed",
-        "bxlocation___25": "Pouch inflamed",
-        "bxlocation___26": "Pouch uninflamed",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_blood_samples(row):
-    """Process blood_samples."""
-    id_map = {
-        "blood_samples___5": "DNA",
-        "blood_samples___3": "PAX gene",
-        "blood_samples___2": "PBMCs",
-        "blood_samples___1": "Serum",
-        "blood_samples___6": "Sodium heparin tube",
-        "blood_samples___4": "Whole blood",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-
-def process_asa_type(row):
-    """Process asa_type."""
-    id_map = {
-        "asa_type___1": "Mesalamine (Asacol, Canasa, Pentasa, Rowasa, Apriso, Lialda)",
-        "asa_type___2": "Balsalazide (Colazal)",
-        "asa_type___3": "Sulfasalazine (Azulfidine)",
-        "asa_type___4": "Olsalazine (Dipentum)",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-
-def process_antitnf_type(row):
-    """Process antitnf_type."""
-    id_map = {
-        "antitnf_type___1": "Infliximab (Remicade)",
-        "antitnf_type___2": "Adalimumab (Humira)",
-        "antitnf_type___3": "Certolizumab pegol (Cimzia)",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    return [str(x) for x in out]
-
-def process_antibiotic_type(row):
-    """Process antibiotic_type."""
-    id_map = {
-        "antibiotic_type___1": "Amoxicillin (Amoxil), Amoxicillin/Clavulanate (Augmentin)",
-        "antibiotic_type___2": "Ciprofloxacin (Cipro)",
-        "antibiotic_type___3": "Metronidazole (Flagyl)",
-        "antibiotic_type___4": "Rifaximin (Xifaxin)",
-        "antibiotic_type___5": "Trimethoprim/Sulfamethoxazole (Bactrim)",
-        "antibiotic_type___6": "Vancomycin",
-    }
-
-    out = []
-
-    for col in id_map.keys():
-        if row[col].upper() == "CHECKED":
-            out.append(id_map[col])
-
-    if row['antibiotic_type___7'].upper() == "CHECKED":
-        out.append("other:{kind}".format(kind=row['other_antibiotic']))
-
-    return [str(x) for x in out]
-
-
-
-def process_all(df):
-    """Process all of the columns needing to be dedummied."""
-    funcs = {
-        "where_stored": process_where_stored,
-        "surgicallocations": process_surgicallocations,
-        "stoolmedia": process_stoolmedia,
-        "probiotic_type": process_probiotic_type,
-        "othermed_type": process_othermed_type,
-        "otherbiologic_type": process_otherbiologic_type,
-        "oral_perianal": process_oral_perianal,
-        "immunomodulator_type": process_immunomodulator_type,
-        "glucocorticoid_type": process_glucocorticoid_type,
-        "familymember_ibd": process_familymember_ibd,
-        "calcineurin_type": process_calcineurin_type,
-        "bxlocation": process_bxlocation,
-        "blood_samples": process_blood_samples,
-        "asa_type": process_asa_type,
-        "antitnf_type": process_antitnf_type,
-        "antibiotic_type": process_antibiotic_type,
-    }
-
-    df_ = df.copy()
-
-    for name, func in funcs.items():
-        df_[name] = df_.apply(func, axis=1)
-
-    return df_
-
-
-
-
-def drop_them(df):
-    """Drop the columns that we just dedummied"""
-    drop_me = (
-        "where_stored___1",
-        "where_stored___2",
-        "where_stored___3",
-        "where_stored___4",
-        "where_stored___7",
-        "where_stored___5",
-        "where_stored___6",
-        "surgicallocations___1",
-        "surgicallocations___9",
-        "surgicallocations___2",
-        "surgicallocations___10",
-        "surgicallocations___3",
-        "surgicallocations___11",
-        "surgicallocations___21",
-        "surgicallocations___22",
-        "surgicallocations___4",
-        "surgicallocations___12",
-        "surgicallocations___23",
-        "surgicallocations___24",
-        "surgicallocations___5",
-        "surgicallocations___13",
-        "surgicallocations___6",
-        "surgicallocations___14",
-        "surgicallocations___7",
-        "surgicallocations___15",
-        "surgicallocations___8",
-        "surgicallocations___16",
-        "stoolmedia___1",
-        "stoolmedia___2",
-        "stoolmedia___3",
-        "stoolmedia___4",
-        "probiotic_type___1",
-        "probiotic_type___2",
-        "probiotic_type___3",
-        "probiotic_type___4",
-        "othermed_type___2",
-        "othermed_type___3",
-        "otherbiologic_type___1",
-        "otherbiologic_type___2",
-        "otherbiologic_type___3",
-        "oral_perianal___1",
-        "oral_perianal___2",
-        "immunomodulator_type___1",
-        "immunomodulator_type___2",
-        "immunomodulator_type___3",
-        "glucocorticoid_type___1",
-        "glucocorticoid_type___2",
-        "glucocorticoid_type___3",
-        "glucocorticoid_type___4",
-        "familymember_ibd___1",
-        "familymember_ibd___2",
-        "familymember_ibd___3",
-        "familymember_ibd___4",
-        "familymember_ibd___5",
-        "familymember_ibd___6",
-        "calcineurin_type___1",
-        "calcineurin_type___2",
-        "bxlocation___1",
-        "bxlocation___11",
-        "bxlocation___2",
-        "bxlocation___12",
-        "bxlocation___3",
-        "bxlocation___13",
-        "bxlocation___4",
-        "bxlocation___14",
-        "bxlocation___5",
-        "bxlocation___15",
-        "bxlocation___6",
-        "bxlocation___16",
-        "bxlocation___21",
-        "bxlocation___22",
-        "bxlocation___7",
-        "bxlocation___17",
-        "bxlocation___23",
-        "bxlocation___24",
-        "bxlocation___8",
-        "bxlocation___18",
-        "bxlocation___9",
-        "bxlocation___19",
-        "bxlocation___20",
-        "bxlocation___10",
-        "bxlocation___25",
-        "bxlocation___26",
-        "blood_samples___5",
-        "blood_samples___3",
-        "blood_samples___2",
-        "blood_samples___1",
-        "blood_samples___6",
-        "blood_samples___4",
-        "asa_type___1",
-        "asa_type___2",
-        "asa_type___3",
-        "asa_type___4",
-        "antitnf_type___1",
-        "antitnf_type___2",
-        "antitnf_type___3",
-        "antibiotic_type___1",
-        "antibiotic_type___2",
-        "antibiotic_type___3",
-        "antibiotic_type___4",
-        "antibiotic_type___5",
-        "antibiotic_type___6",
-        "antibiotic_type___7",
-        )
-
-    return df.copy().drop(drop_me)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    # TODO: configure BiorepoRedCapData CONF variable
+    conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {}
+                                                  
+    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = []
+    
+    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = []
+    
+    conf = munchify(conf)
+                                                  
+    def __init__(self, data_path, data_dict_path):
+        """Load, recode, and verify various sets of information related to a BIOREPOSITORY RedCap dump.
+
+        Args:
+            data_path (Path): Location of redcap csv dump.
+            data_dict_path (Path): Location of data_dict csv.
+        """
+        super().__init__(data_path, data_dict_path)
+
+        
+
+########################## True Recoding Functions ##########################
+
+def cast_func_ignore_nulls(x, f):
+    """Meant to be past to ``df.column_name.apply()``.
+
+    Args:
+        x (??): item in a ``pandas.Series``
+        func (function): function that casts ``x`` as some type.
+
+    Returns:
+        f(x) | x: re-cast value of ``x`` or original ``x`` if ``f`` fails.
+    """
+    if pd.notnull(x):
+        return f(x)
+    else:
+        return x
+
+
+
+def cast_column_as_date(df, col):
+    """Perform in-place re-casting of ``df[col]`` to ``pendulum.Pendulum``.
+    
+    Ignores nulls.
+    
+    Args:
+        df (pandas.DataFrame): a dataframe.
+        col (str): column name in ``df`` to be re-cast.
+    """
+    df.loc[:,col] = df[col].apply(cast_func_ignore_nulls, f=pd.Timestamp)
+
+
+def cast_column_as_category(df, col):
+    """Perform in-place re-casting of ``df[col]`` to ``pendulum.Pendulum``.
+    
+    Args:
+        df (pandas.DataFrame): a dataframe.
+        col (str): column name in ``df`` to be re-cast.
+    """
+    df[col] = df[col].astype('category')
+
+
+def recast_advanced_dtypes(data, data_dict, crude_dtypes):
+    """Convert dataframe columns to more useful dtypes.
+
+    This includes using things like ``pandas.Categorical`` and ``pendulum.Pendulum`` types
+    rather that defaulting to ``str`` or ``float`` primitives.
+
+    Args:
+        self.data (pandas.DataFrame): Loaded and crudely re-typed redcap data dump.
+        self.data_dict (pandas.DataFrame): Loaded self.data_dict object.
+        self.crude_dtypes (Munch): Output from ``_infer_crude_dtypes()``.
+
+    Returns:
+        None: Modifies ``data`` in-place.
+    """
+    recast_as = Munch()
+
+    # Collect Columns to re-cast
+    ## Category Columns
+    redcap_cats = {"radio",
+                   "checkbox",
+                   "dropdown",
+                   "yesno",
+                   "category", }
+
+    recast_as.category = [col for col, val in crude_dtypes.redcap_dtypes.items() if val in redcap_cats]
+
+    ## Date Columns
+    dt_vals = {'date_mdy', 'date_dmy'}
+    recast_as.date = list(data_dict[data_dict['Text Validation Type OR Show Slider Number'].isin(dt_vals)].index.values)
+
+    # Do the re-casts
+    ## Categories
+    [cast_column_as_category(df=data, col=c) for c in recast_as.category]
+
+    ## Dates
+    [cast_column_as_date(df=data, col=c) for c in recast_as.date]
