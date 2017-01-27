@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""Provide logic to import, parse, and recode project data into usable structures for analysis."""
+"""Provide logic to import, parse, and recode BIOREPOSITORY data into usable structures for analysis."""
 
 # Imports
 import os
