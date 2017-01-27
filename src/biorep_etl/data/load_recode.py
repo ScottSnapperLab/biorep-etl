@@ -4,13 +4,14 @@
 # Imports
 import os
 from pathlib import Path
+from collections import defaultdict
 import logging
 logger = logging.getLogger(__name__)
 
 import pandas as pd
 import numpy as np
 
-from munch import Munch
+from munch import Munch, munchify
 
 import engarde.decorators as ed
 import engarde.checks as ck
@@ -22,10 +23,17 @@ import biorep_etl.errors as e
 __author__ = "Gus Dunn"
 __email__ = "w.gus.dunn@gmail.com"
 
+# Constants
+def tree():
+    return defaultdict(tree)
 
+
+# Classes
 class BaseRedCapData(object):
     """Organize the common loading, preparation, and storing of RedCap data dumps."""
-
+    
+    conf = None
+    
     def __init__(self, data_path, data_dict_path):
         """Load, recode, and verify various sets of information related to a RedCap dump.
 
@@ -33,35 +41,15 @@ class BaseRedCapData(object):
             data_path (Path): Location of redcap csv dump.
             data_dict_path (Path): Location of data_dict csv.
         """
-
-
-    def load_data_dict(self, data_dict_path):
-        """Load data dict into dataframe."""
-        return pd.read_csv(data_dict_path, index_col=0)
-
-
-class RegistryRedCapData(object):
-    """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
-
-    def __init__(self, data_path, data_dict_path):
-        """Load, recode, and verify various sets of information related to a RedCap dump.
-
-        Args:
-            data_path (Path): Location of redcap csv dump.
-            data_dict_path (Path): Location of data_dict csv.
-        """
-        super(RegistryRedCapData, self).__init__()
-
         self._load_data_dict(data_dict_path=data_dict_path)
         self._make_required_columns()
-
+        self._infer_crude_dtypes(data_path=data_path)
         self._make_field_map()
         self._make_choice_maps()
         self._make_redcap_validation_table()
-        
-        self._infer_crude_dtypes(data_path=data_path)
-        
         self._load_redcap_dump(data_path=data_path)
+        
+
 
     def _make_required_columns(self):
         """Return list of columns that are required."""
@@ -114,57 +102,7 @@ class RegistryRedCapData(object):
             maps[col].update({int_: txt_ for int_, txt_ in parsed_choices})
 
         self.choices_map = maps
-
-    def _make_redcap_validation_table(self):
-        """Return a dataframe representing the validation columns of the ``data_dict``.
-
-        Relevant columns: ['Text Validation Type OR Show Slider Number',
-                           'Text Validation Min',
-                           'Text Validation Max']
-
-        Modifications:
-            - Columns renamed to: ['type','min','max'].
-            - Rows where all values are null are dropped.
-            - Columns where 'type' == null are corrected as rationally as possible.
-            - Values in the ['min','max'] columns are cast into correct types where possible.
-
-        Returns:
-            pandas.DataFrame
-        """
-        # Set up constants and stuff
-        ## Missing type info
-        fix = Munch()
-        fix.labs = {'alb', 'crp', 'esr', 'hct', 'plt', 'wbc'}
-
-        ## Conversion map for max/min values
-        type_conversions = Munch()
-        type_conversions.date_mdy = pd.Timestamp
-        type_conversions.integer = np.int64
-        type_conversions.number = np.float64
-        type_conversions.number_1dp = np.float64
-        type_conversions.date_dmy = pd.Timestamp
-
-        # Subset and rename the target columns
-        validation = self.data_dict[
-            ['Text Validation Type OR Show Slider Number', 'Text Validation Min', 'Text Validation Max']].dropna(
-            how='all')
-        validation.columns = ['type', 'min', 'max']
-
-        # fix the null typed rows
-        ## lab values should be numbers
-        validation.loc[list(fix.labs), 'type'] = 'number'
-
-        # recast the min/max values as appropriate (IGNORING nulls for now).
-        for typ, cast_func in type_conversions.items():
-            idxs = validation.query(""" type == '{typ}' """.format(typ=typ)).index
-
-            validation.loc[idxs, 'min'] = validation.loc[idxs, 'min'].apply(cast_func_ignore_nulls, f=cast_func).astype(
-                'object')
-            validation.loc[idxs, 'max'] = validation.loc[idxs, 'max'].apply(cast_func_ignore_nulls, f=cast_func).astype(
-                'object')
-
-        self.validation_table = validation
-
+        
     def _infer_crude_dtypes(self, data_path):
         """Use data_dict to infer correct data types for each data column.
 
@@ -204,11 +142,7 @@ class RegistryRedCapData(object):
                 col_redcap_types[col] = redcap_types[col.split('___')[0]]
             except KeyError as exc:
                 # TODO: make use_category robust to different redcap sources
-                use_category = {'redcap_event_name',
-                                'registration_visit_complete',
-                                'baseline_and_follow_up_complete',
-                                'surgeries_complete',
-                                'hospitalizations_complete'}
+                use_category = self.conf.INFER_CRUDE_DTYPES.USE_CATEGORY
 
                 missing_key = exc.args[0]
                 if missing_key in use_category:
@@ -219,9 +153,58 @@ class RegistryRedCapData(object):
         # Set up return dict
         crude_dtypes = Munch()
         crude_dtypes.redcap_dtypes = col_redcap_types
-        crude_dtypes.numpy_dtypes = {col_name: rc2np[val] for col_name, val in col_redcap_types.items()}
+        crude_dtypes.numpy_dtypes = Munch({col_name: rc2np[val] for col_name, val in col_redcap_types.items()})
 
         self.crude_dtypes = crude_dtypes
+        
+
+    def _make_redcap_validation_table(self):
+        """Return a dataframe representing the validation columns of the ``data_dict``.
+
+        Relevant columns: ['Text Validation Type OR Show Slider Number',
+                           'Text Validation Min',
+                           'Text Validation Max']
+
+        Modifications:
+            - Columns renamed to: ['type','min','max'].
+            - Rows where all values are null are dropped.
+            - Columns where 'type' == null are corrected as rationally as possible.
+            - Values in the ['min','max'] columns are cast into correct types where possible.
+
+        Returns:
+            pandas.DataFrame
+        """
+        # Set up constants and stuff
+        ## Missing type info
+        missing_rcap_type = self.conf.MAKE_REDCAP_VALIDATION_TABLE.MISSING_RCAP_TYPE
+
+        ## Conversion map for max/min values
+        type_conversions = Munch()
+        type_conversions.date_mdy = pd.Timestamp
+        type_conversions.integer = np.int64
+        type_conversions.number = np.float64
+        type_conversions.number_1dp = np.float64
+        type_conversions.date_dmy = pd.Timestamp
+
+        # Subset and rename the target columns
+        validation = self.data_dict[['Text Validation Type OR Show Slider Number', 'Text Validation Min', 'Text Validation Max']].dropna(how='all')
+        validation.columns = ['type', 'min', 'max']
+
+        # fix the null typed rows
+        ## lab values should be numbers for example
+        for rcap_type, col_names in missing_rcap_type.items():
+            validation.loc[col_names, 'type'] = rcap_type
+
+        # recast the min/max values as appropriate (IGNORING nulls for now).
+        for typ, cast_func in type_conversions.items():
+            idxs = validation.query(""" type == '{typ}' """.format(typ=typ)).index
+
+            validation.loc[idxs, 'min'] = validation.loc[idxs, 'min'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
+            validation.loc[idxs, 'max'] = validation.loc[idxs, 'max'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
+
+        self.validation_table = validation
+
+
 
     def _load_redcap_dump(self, data_path):
         """Return loaded, recode, and validated dump table.
@@ -233,12 +216,65 @@ class RegistryRedCapData(object):
         Returns:
             pandas.DataFrame
         """
+        index_cols = self.conf.LOAD_REDCAP_DUMP.INDEX_COLS
+        
         data = pd.read_csv(data_path, dtype=self.crude_dtypes.numpy_dtypes, index_col=None)
 
         recast_advanced_dtypes(data=data, data_dict=self.data_dict, crude_dtypes=self.crude_dtypes)
 
-        self.data = data.set_index(['subid', 'redcap_event_name']).sort_index(level='subid')
+        self.data = data
         
+        if index_cols:
+            self.data.set_index(index_cols)
+
+
+class RegistryRedCapData(BaseRedCapData):
+    """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
+    conf = tree()
+    conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {'redcap_event_name',
+                                                  'registration_visit_complete',
+                                                  'baseline_and_follow_up_complete',
+                                                  'surgeries_complete',
+                                                  'hospitalizations_complete'}
+                                                  
+    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = ['alb', 'crp', 'esr', 'hct', 'plt', 'wbc']
+    
+    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = ['subid','redcap_event_name']
+    
+    conf = munchify(conf)
+                                                  
+    def __init__(self, data_path, data_dict_path):
+        """Load, recode, and verify various sets of information related to a HARVARD_REGISTRY RedCap dump.
+
+        Args:
+            data_path (Path): Location of redcap csv dump.
+            data_dict_path (Path): Location of data_dict csv.
+        """
+        super().__init__(data_path, data_dict_path)
+        
+
+class BiorepoRedCapData(BaseRedCapData):
+    """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
+    conf = tree()
+    
+    # TODO: configure BiorepoRedCapData CONF variable
+    conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {}
+                                                  
+    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = []
+    
+    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = []
+    
+    conf = munchify(conf)
+                                                  
+    def __init__(self, data_path, data_dict_path):
+        """Load, recode, and verify various sets of information related to a BIOREPOSITORY RedCap dump.
+
+        Args:
+            data_path (Path): Location of redcap csv dump.
+            data_dict_path (Path): Location of data_dict csv.
+        """
+        super().__init__(data_path, data_dict_path)
+
         
 
 ########################## True Recoding Functions ##########################
