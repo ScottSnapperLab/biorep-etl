@@ -49,7 +49,13 @@ class BaseRedCapData(object):
         self._make_redcap_validation_table()
         self._load_redcap_dump(data_path=data_path)
         
+        self.prep_for_sql = Munch()
+        self.ready_for_sql = Munch()
+        
 
+    def build_tables_for_sql(self):
+        """Extract and store data as tables in preparation for SQL conversion."""
+        raise NotADirectoryError('Override this method as appropriate in subclasses.')
 
     def _make_required_columns(self):
         """Return list of columns that are required."""
@@ -58,7 +64,8 @@ class BaseRedCapData(object):
     def _load_data_dict(self, data_dict_path):
         """Load data dict into dataframe."""
         self.data_dict = pd.read_csv(data_dict_path, index_col=0)
-
+        recode_yesno_choice_values(df=self.data_dict)
+        
     def _make_field_map(self):
         """Return Dict to translate field names and field labels."""
         d = Munch()
@@ -87,8 +94,7 @@ class BaseRedCapData(object):
         choice_strings = self.data_dict[self.data_dict['Field Type'] != 'calc']
 
         # This is all items in the choice definitions column, that are not null, indexed by the data column they pertain to.
-        choice_strings = choice_strings[choice_strings['Choices, Calculations, OR Slider Labels'].notnull()][
-            'Choices, Calculations, OR Slider Labels']
+        choice_strings = choice_strings[choice_strings['Choices, Calculations, OR Slider Labels'].notnull()]['Choices, Calculations, OR Slider Labels']
 
         # Add first level of tree (keys=col_names and vals=Munch())
         maps = Munch({col: Munch() for col in choice_strings.index.values})
@@ -185,6 +191,7 @@ class BaseRedCapData(object):
         type_conversions.number = np.float64
         type_conversions.number_1dp = np.float64
         type_conversions.date_dmy = pd.Timestamp
+        type_conversions.yesno = np.float64
 
         # Subset and rename the target columns
         validation = self.data_dict[['Text Validation Type OR Show Slider Number', 'Text Validation Min', 'Text Validation Max']].dropna(how='all')
@@ -203,8 +210,6 @@ class BaseRedCapData(object):
             validation.loc[idxs, 'max'] = validation.loc[idxs, 'max'].apply(cast_func_ignore_nulls, f=cast_func).astype('object')
 
         self.validation_table = validation
-
-
 
     def _load_redcap_dump(self, data_path):
         """Return loaded, recode, and validated dump table.
@@ -225,7 +230,7 @@ class BaseRedCapData(object):
         self.data = data
         
         if index_cols:
-            self.data.set_index(index_cols)
+            self.data = self.data.set_index(index_cols)
 
 
 class RegistryRedCapData(BaseRedCapData):
@@ -252,6 +257,23 @@ class RegistryRedCapData(BaseRedCapData):
         """
         super().__init__(data_path, data_dict_path)
         
+    def build_tables_for_sql(self):
+        """Extract and store data as tables in preparation for SQL conversion."""
+        self.prep_for_sql.subject = self._build_subject_table()
+        
+    def _build_subject_table(self):
+        """Gather and return dataframe representing the subject_table."""
+        cols = ["visitdate","consent","veoibd","dob","gender","race","ethnicity","ibddiag","contact"]
+        subject = self.data[cols].dropna(axis=0,how='all')
+        
+        for col in cols:
+            try:
+                verbosify(df=subject, col=col, choice_map=self.choices_map)
+            except KeyError:
+                pass
+        
+        return subject.reset_index().drop('redcap_event_name', axis=1)
+
 
 class BiorepoRedCapData(BaseRedCapData):
     """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
@@ -354,3 +376,33 @@ def recast_advanced_dtypes(data, data_dict, crude_dtypes):
 
     ## Dates
     [cast_column_as_date(df=data, col=c) for c in recast_as.date]
+    
+    
+def verbosify(df, col, choice_map=None):
+    """Replace the cryptic values (usually integers) of a dataframe column with the verbose values.
+
+    Args:
+        df (pandas.dataframe): a dataframe.
+        col (str): String used as column index in ``df``.
+        choice_map (dict-like): multilevel dict-like tree with level 1 being column names and level 2 being terse to verbose maps.
+        
+    Returns:
+        None: modifies ``df``.
+    """
+    # DONE: eliminate the need for special treatment of `yesno` columns
+
+    df.loc[:,col] = df.loc[:,col].apply(lambda i: choice_map[col][str(int(i))])
+
+def recode_yesno_choice_values(df):
+    """Change unset "Choices, Calculations, OR Slider Labels" with ``yesno`` type to useful choice strings."""
+    # Add "Choices, Calculations, OR Slider Labels" values for ``yesno`` types ONLY IF the value is NaN
+    def recode(row):
+        if ((row['Field Type'] == 'yesno')
+            and
+            (str(row['Choices, Calculations, OR Slider Labels']).upper() == 'NAN')):
+            return '0, No | 1, Yes'
+        else:
+            return row['Choices, Calculations, OR Slider Labels']
+            
+    new_choices = df.apply(recode, axis=1)
+    df['Choices, Calculations, OR Slider Labels'] = new_choices
