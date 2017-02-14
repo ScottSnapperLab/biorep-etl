@@ -20,14 +20,29 @@ def get_dd_index_from_str(dd, string):
 
 
 
-def table_maker_helper(dd,start,end):
+
+def table_maker_helper(dd,start=None,end=None, var_names=None):
     m = Munch()
     
-    m.span = dd.reset_index().iloc[start:end,:]['Variable / Field Name']
-    m.dd = dd.iloc[m.span.index.values]
+    if var_names is not None:
+        vars = []
+        for col in var_names:
+            col_base = col.split('___')[0]
+            if col_base not in vars:
+                vars.append(col_base)
+                
+
+        m.dd = dd[dd.index.isin(vars)]
+
+    elif start:
+        m.span = dd.reset_index().iloc[start:end,:]['Variable / Field Name']
+        m.dd = dd.iloc[m.span.index.values]
+        
+    
     m.type_counts = m.dd['Field Type'].value_counts()
     m.fields = list(m.dd.index.values)
     m.checkboxes = list(m.dd[m.dd['Field Type'] == 'checkbox'].index.values)
     m.not_checkboxes = [f for f in m.fields if f not in m.checkboxes]
     
     return m
+    
