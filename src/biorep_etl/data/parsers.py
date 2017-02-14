@@ -14,11 +14,10 @@ __email__ = "w.gus.dunn@gmail.com"
 # Functions
 def build_choices_parser():
     """Return a pyparsing object built to digest choice label defintions."""
-    
     choice_delim = p.Literal('|').suppress()
     value_delim = p.Literal(',').suppress()
     
-    choice_int = p.Word(p.nums) + p.FollowedBy(',')
+    choice_int = p.Word('-' + p.nums) + p.FollowedBy(',')
     choice_txt = p.Word(p.printables + ' ', excludeChars='|').setParseAction(lambda toks: toks[0].rstrip())
     
     choice = p.Group(p.Optional(choice_delim) + choice_int + value_delim + choice_txt + p.Optional(choice_delim))
