@@ -31,7 +31,7 @@ def tree():
 # Classes
 class RedCapData(object):
     """Organize the common loading, preparation, and storing of RedCap data dumps."""
-    
+
     conf = None
     
     def __init__(self, data_path, data_dict_path):
@@ -56,7 +56,7 @@ class RedCapData(object):
 
     def build_tables_for_sql(self):
         """Extract and store data as tables in preparation for SQL conversion."""
-        raise NotADirectoryError('Override this method as appropriate in subclasses.')
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
         
     def _make_type_conversions(self):
         """Establish common map for redcap type conversion functions."""
@@ -170,7 +170,7 @@ class RedCapData(object):
         # Get redcap dtypes for each row of data_dict
         redcap_types = self.data_dict['Field Type']
 
-        # Use redcap_types + data_col_names to associate a reasonible dtype
+        # Use redcap_types + data_col_names to associate a reasonable dtype
         col_redcap_types = Munch()
 
         ## distribute redcap_type to each col
@@ -265,11 +265,11 @@ class RegistryRedCapData(RedCapData):
                                                   'baseline_and_follow_up_complete',
                                                   'surgeries_complete',
                                                   'hospitalizations_complete'}
-                                                  
+
     conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = ['alb', 'crp', 'esr', 'hct', 'plt', 'wbc']
-    
+
     conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = ['subid','redcap_event_name']
-    
+
     conf = munchify(conf)
                                                   
     def __init__(self, data_path, data_dict_path):
@@ -323,6 +323,8 @@ class RegistryRedCapData(RedCapData):
     #                                parent_table_name=parent_table_name,
     #                                checkboxes=checkboxes,
     #                                cols=cols)
+
+
 
 
     def _build_jewish_ancetry_table(self):
@@ -971,11 +973,11 @@ class BiorepoRedCapData(RedCapData):
     conf = tree()
     
     # TODO: configure BiorepoRedCapData CONF variable
-    conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {}
+    conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {"ibd_biorepository_sample_database_complete"}
                                                   
     conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = []
     
-    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = []
+    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = 'biorepidnumber'
     
     conf = munchify(conf)
                                                   
@@ -987,8 +989,226 @@ class BiorepoRedCapData(RedCapData):
             data_dict_path (Path): Location of data_dict csv.
         """
         super().__init__(data_path, data_dict_path)
+        
+        # drop rows whose index == NaN
+        not_nans = self.data.reset_index()['biorepidnumber'].notnull()
+        self.data = self.data.reset_index()[not_nans].set_index('biorepidnumber')
 
 
+
+    def build_tables_for_sql(self):
+        """Extract and store data as tables in preparation for SQL conversion."""
+        ## self.prep_for_sql.update(self._build_family_table())
+        self.prep_for_sql.update(self._build_subject_table())
+        self.prep_for_sql.update(self._build_sample_table())
+        self.prep_for_sql.update(self._build_visit_table())
+        
+        
+        
+    # def _build_XXX_table(self):
+    #     """Gather and return dataframe representing the xxxxxxx tables.
+    #
+    #     Returns:
+    #         dict-like: tables ["??","??"]
+    #     """
+    #     parent_table_name = 'xxxxxxxxxxx'
+    #
+    #     checkboxes = {}
+    #
+    #     cols = []
+    #
+    #     return build_generic_table(obj=self,
+    #                                parent_table_name=parent_table_name,
+    #                                checkboxes=checkboxes,
+    #                                cols=cols)
+
+    # def _build_family_table(self):
+    #     """Gather and return dataframe representing the family tables.
+    #
+    #     Returns:
+    #         dict-like: tables ["??","??"]
+    #     """
+    #     parent_table_name = 'family'
+    #
+    #     checkboxes = {}
+    #
+    #     cols = []
+    #
+    #     return build_generic_table(obj=self,
+    #                                parent_table_name=parent_table_name,
+    #                                checkboxes=checkboxes,
+    #                                cols=cols)
+
+
+    def _build_subject_table(self):
+        """Gather and return dataframe representing the subject tables.
+    
+        Returns:
+            dict-like: tables ["??","??"]
+        """
+        parent_table_name = 'subject'
+    
+        # TODO: go add the correct "other" cols
+        checkboxes = {'familymember_ibd': None,
+                      'race': None}
+        
+    
+        cols = ['registryconsent',
+                'biorepconsent',
+                'ibdyesno',
+                'ibdtype',
+                'otheribddx',
+                'family_history',
+                'other_relative',
+                'ibd_immunodeficiencies',
+                'other_immunodeficiency',
+                'controldx',
+                'other_diagnosis',
+                'control_immunodeficiency',
+                'otherimmuno_control',
+                'psc',
+                'familymembertype',
+                'familymembergidx',
+                'family_otherdiagnosis',
+                'gender',
+                'dob',
+                'hispanic_or_latino',
+                'neopics_sample',
+                'chb_id',
+                'neopics',
+                'non_bch_pt',
+                'referring_hospital',
+                'referring_physician',
+                'symptom_onset',
+                'date_of_diagnosis',
+                'consanguinity']
+                
+        return build_generic_table(obj=self,
+                                   parent_table_name=parent_table_name,
+                                   checkboxes=checkboxes,
+                                   cols=cols)
+
+
+    def _build_sample_table(self):
+        """Gather and return dataframe representing the sample tables.
+
+        Returns:
+            dict-like: tables ["??","??"]
+        """
+        parent_table_name = 'sample'
+
+        # TODO: go add the correct "other" cols
+        checkboxes = {'blood_samples': None,
+                      'stoolmedia': None,
+                      'bxlocation': None,
+                      'surgicallocations': None,
+                      'where_stored': None}
+
+
+        cols = ['record_id',
+                'samplenumber',
+                'label_on_sample',
+                'completed_by',
+                'date_crf_completed',
+                'sample_date',
+                'prior_protocol_number',
+                'sampletype',
+                'other_sampletype',
+                'longitudinal',
+                'timetominus20',
+                'timetominus80',
+                'stool_dna',
+                'other_shipped',
+                'labmember']
+
+        return build_generic_table(obj=self,
+                                   parent_table_name=parent_table_name,
+                                   checkboxes=checkboxes,
+                                   cols=cols)
+
+
+    def _build_visit_table(self):
+        """Gather and return dataframe representing the visit tables.
+    
+        Returns:
+            dict-like: tables ["??","??"]
+        """
+        parent_table_name = 'visit'
+        
+        # TODO: go add the correct "other" cols
+        checkboxes = {'asa_type': None,
+                      'antibiotic_type': None,
+                      'probiotic_type': None,
+                      'glucocorticoid_type': None,
+                      'immunomodulator_type': None,
+                      'antitnf_type': None,
+                      'calcineurin_type': None,
+                      'otherbiologic_type': None,
+                      'othermed_type': None}
+    
+        cols = ['samplenumber',
+                'sample_date',
+                'nsaid',
+                'nsaid_doses',
+                'hbi_wellbeing',
+                'hbi_abdpain',
+                'hbi_liquidstools',
+                'hbi_abdominalmass',
+                'hbi_complications',
+                'hbi_abscess',
+                'hbi_fissure',
+                'hbi_aphthous',
+                'hbi_arthralgia',
+                'hbi_nodosum',
+                'hbi_fistula',
+                'hbi_gangrenosum',
+                'hbi_uveitis',
+                'hbi_total',
+                'sccai_stoolsperday',
+                'sccai_stoolspernight',
+                'sccai_urgency',
+                'sccai_blood',
+                'sccai_wellbeing',
+                'sccai_eim',
+                'sccai_arthralgia',
+                'sccai_nodosum',
+                'sccai_gangrenosum',
+                'sccai_uveitis',
+                'sccai_total',
+                'pucai_abdpain',
+                'pucai_bleeding',
+                'pucai_consistency',
+                'pucai_frequency',
+                'pucai_nocturnal',
+                'pucai_limitation',
+                'pucai_total',
+                'anymeds',
+                'current_5asa',
+                'current_antibiotic',
+                'other_antibiotic',
+                'current_probiotic',
+                'other_probiotic',
+                'current_glucocorticoid',
+                'current_immunomodulator',
+                'current_antitnf',
+                'current_calcineurin',
+                'current_otherbiologics',
+                'fecaltransplant',
+                'current_othermeds',
+                'othermed',
+                'date_labs',
+                'hct',
+                'wbc',
+                'plt',
+                'crp',
+                'esr',
+                'alb',
+                'notes']
+    
+        return build_generic_table(obj=self,
+                                   parent_table_name=parent_table_name,
+                                   checkboxes=checkboxes,
+                                   cols=cols)
 
 
 ########################## General Helper Functions ##########################
@@ -1049,7 +1269,7 @@ def build_generic_table(obj, parent_table_name, cols, checkboxes=None):
                                                     conversion_map=obj.type_conversions)
             except KeyError:
                 pass
-        
+
     return m
 
 ########################## True Recoding Functions ##########################
@@ -1094,7 +1314,18 @@ def cast_column_as_date(df, col):
         df (pandas.DataFrame): a dataframe.
         col (str): column name in ``df`` to be re-cast.
     """
-    df.loc[:,col] = df[col].apply(pd.Timestamp)
+    def cast_time(x):
+        try:
+            return pd.Timestamp(x)
+        except ValueError as exc:
+            if "could not convert string to Timestamp" in exc.args[0]:
+                msg = "{time} is not valid, setting to `NaT`.".format(time=x)
+                logger.warning(msg)
+                return pd.NaT
+
+
+
+    df.loc[:,col] = df[col].apply(cast_time)
 
 
 def cast_column_as_category(df, col):
@@ -1192,11 +1423,13 @@ def make_checkbox_subtable(df, col_base_name=None, other_col=None, foreign_key_c
     main_cols = df[[col for col in df.columns.values if col.split('___')[0] == col_base_name]]
     
     # Excluding `other_col`, create new subtable by melting, droping, and mapping "stuff"
-    if isinstance(main_cols.index, pd.MultiIndex):
-        index_names = main_cols.index.names
-    else:
-        index_names = []
-        
+    # # if isinstance(main_cols.index, pd.MultiIndex):
+    # #     index_names = main_cols.index.names
+    # # else:
+    # #     index_names = main_cols.index.names
+
+    index_names = main_cols.index.names
+
     main_cols_ = pd.melt(frame=main_cols.reset_index(),
                          id_vars=index_names,
                          value_vars=None,
