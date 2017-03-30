@@ -29,7 +29,122 @@ def tree():
 
 
 # Classes
-class RedCapData(object):
+
+class BaseData(object):
+    """Organize the common loading, preparation, and storing of generic data dumps."""
+
+    conf = None
+    
+    def __init__(self, data_path, data_dict_path):
+        """Load, recode, and verify various sets of information related to a generic data dump.
+
+        Args:
+            data_path (Path): Location of csv dump.
+            data_dict_path (Path): Location of data_dict csv.
+        """
+        self._make_type_conversions()
+        self._load_data_dict(data_dict_path=data_dict_path)
+        self._make_required_columns()
+        self._infer_crude_dtypes(data_path=data_path)
+        self._make_field_map()
+        self._make_choice_maps()
+        self._make_validation_table()
+        self._load_data_dump(data_path=data_path)
+        
+        self.prep_for_sql = Munch()
+        self.ready_for_sql = Munch()
+        
+
+    def build_tables_for_sql(self):
+        """Extract and store data as tables in preparation for SQL conversion."""
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+        
+    def _make_type_conversions(self):
+        """Establish common map for type conversion functions."""
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+
+    def _make_required_columns(self):
+        """Return list of columns that are required."""
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+        # self.required_columns = list(self.data_dict[self.data_dict['Required Field?'] == 'y'].index.values)
+
+    def _load_data_dict(self, data_dict_path):
+        """Load data dict into dataframe."""
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+        
+        # set obj value after resetting the original order and setting the index column
+        self.data_dict = pd.concat(dfs).sort_index().set_index('Variable / Field Name')
+        
+        
+    def _make_field_map(self):
+        """Return Dict to translate field names and field labels."""
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+
+        self.field_map = d
+
+    def _make_choice_maps(self):
+        """Return dict of dicts to translate ``int`` values to their meanings.
+
+        Generally, the columns will be those whose data type is categorical.
+        Examples: 'prior_protocol_number', 'gender', etc.
+
+
+        Returns:
+            Munch: dict of dicts -> key1 = column_names, key2 = ``int``, value = choice text.
+        """
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+
+        self.choices_map = maps
+        
+    def _infer_crude_dtypes(self, data_path):
+        """Use data_dict to infer correct data types for each data column.
+
+        Args:
+            data_path (Path | str): Location of data dump.
+
+        Returns:
+            Munch: ``keys in ['','']``
+        """
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+
+        self.crude_dtypes = crude_dtypes
+        
+
+    def _make_validation_table(self):
+        """Return a dataframe representing the validation columns of the ``data_dict``.
+
+        Relevant columns: ['Text Validation Type OR Show Slider Number',
+                           'Text Validation Min',
+                           'Text Validation Max']
+
+        Modifications:
+            - Columns renamed to: ['type','min','max'].
+            - Rows where all values are null are dropped.
+            - Columns where 'type' == null are corrected as rationally as possible.
+            - Values in the ['min','max'] columns are cast into correct types where possible.
+
+        Returns:
+            pandas.DataFrame
+        """
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+
+        self.validation_table = validation
+
+    def _load_data_dump(self, data_path):
+        """Return loaded, recode, and validated dump table.
+
+        Args:
+            data_path (Path): Location of redcap data dump.
+            self.data_dict (pandas.DataFrame): Loaded data_dict object.
+
+        Returns:
+            pandas.DataFrame
+        """
+        raise NotImplementedError('Override this method as appropriate in subclasses.')
+            
+        self.data = self.data.sort_index()
+
+class RedCapData(BaseData):
     """Organize the common loading, preparation, and storing of RedCap data dumps."""
 
     conf = None
@@ -41,22 +156,7 @@ class RedCapData(object):
             data_path (Path): Location of redcap csv dump.
             data_dict_path (Path): Location of data_dict csv.
         """
-        self._make_type_conversions()
-        self._load_data_dict(data_dict_path=data_dict_path)
-        self._make_required_columns()
-        self._infer_crude_dtypes(data_path=data_path)
-        self._make_field_map()
-        self._make_choice_maps()
-        self._make_redcap_validation_table()
-        self._load_redcap_dump(data_path=data_path)
-        
-        self.prep_for_sql = Munch()
-        self.ready_for_sql = Munch()
-        
-
-    def build_tables_for_sql(self):
-        """Extract and store data as tables in preparation for SQL conversion."""
-        raise NotImplementedError('Override this method as appropriate in subclasses.')
+        super().__init__(data_path, data_dict_path)
         
     def _make_type_conversions(self):
         """Establish common map for redcap type conversion functions."""
@@ -195,7 +295,7 @@ class RedCapData(object):
         self.crude_dtypes = crude_dtypes
         
 
-    def _make_redcap_validation_table(self):
+    def _make_validation_table(self):
         """Return a dataframe representing the validation columns of the ``data_dict``.
 
         Relevant columns: ['Text Validation Type OR Show Slider Number',
@@ -233,7 +333,7 @@ class RedCapData(object):
 
         self.validation_table = validation
 
-    def _load_redcap_dump(self, data_path):
+    def _load_data_dump(self, data_path):
         """Return loaded, recode, and validated dump table.
 
         Args:
@@ -243,7 +343,7 @@ class RedCapData(object):
         Returns:
             pandas.DataFrame
         """
-        index_cols = self.conf.LOAD_REDCAP_DUMP.INDEX_COLS
+        index_cols = self.conf.LOAD_DATA_DUMP.INDEX_COLS
         
         data = pd.read_csv(data_path, dtype=self.crude_dtypes.numpy_dtypes, index_col=None)
 
@@ -268,7 +368,7 @@ class RegistryRedCapData(RedCapData):
 
     conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = ['alb', 'crp', 'esr', 'hct', 'plt', 'wbc']
 
-    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = ['subid','redcap_event_name']
+    conf['LOAD_DATA_DUMP']['INDEX_COLS'] = ['subid','redcap_event_name']
 
     conf = munchify(conf)
                                                   
@@ -1028,7 +1128,7 @@ class BiorepoRedCapData(RedCapData):
                                                                             # 'pucai_abdpain', 'pucai_bleeding', 'pucai_consistency',
                                                                             # 'pucai_frequency', 'pucai_nocturnal', 'pucai_limitation']
                                                                             #
-    conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = 'biorepidnumber'
+    conf['LOAD_DATA_DUMP']['INDEX_COLS'] = 'biorepidnumber'
     
     conf = munchify(conf)
                                                   
