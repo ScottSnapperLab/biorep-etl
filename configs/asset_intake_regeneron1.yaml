@@ -1,0 +1,19 @@
+BATCHES:
+    REGENERON1:
+        ASSAY_TYPE: WES
+
+        FILE_TYPE:
+            VCF:
+                - /home/gus/src/repos/git/project-repos/veoibd-synapse-data-manager/data/raw/cd55/VCF/h38/*.vcf.gz
+            VCF_TBI:
+                - /home/gus/src/repos/git/project-repos/veoibd-synapse-data-manager/data/raw/cd55/VCF/h38/*.vcf.gz.tbi
+            
+    # MERCK1:
+    #     ASSAY_TYPE: WGS
+    #
+    #     FILE_TYPE:
+    #         VCF:
+    #             - /home/gus/src/repos/git/project-repos/veoibd-synapse-data-manager/data/raw/cd55/VCF/h37/*.vcf.gz
+    #         VCF_TBI:
+    #             - /home/gus/src/repos/git/project-repos/veoibd-synapse-data-manager/data/raw/cd55/VCF/h37/*.vcf.gz.tbi
+    

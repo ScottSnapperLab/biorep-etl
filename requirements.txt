@@ -32,3 +32,4 @@ pygraphviz
 engarde
 pyparsing
 lxml
+sqlalchemy
