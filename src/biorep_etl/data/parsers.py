@@ -2,8 +2,6 @@
 """Provide pyparsing parsers for the project."""
 
 # Imports
-from lxml import etree
-from lxml import objectify
 
 import pyparsing as p
 

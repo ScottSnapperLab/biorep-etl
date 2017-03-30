@@ -285,7 +285,7 @@ class RegistryRedCapData(RedCapData):
         """Extract and store data as tables in preparation for SQL conversion."""
         self.prep_for_sql.update(self._build_subject_table())
         self.prep_for_sql.update(self._build_jewish_ancetry_table())
-        # self.prep_for_sql.update(self._build_ibd_basics_table())
+        self.prep_for_sql.update(self._build_baseline_and_follow_up_table())
         self.prep_for_sql.update(self._build_family_and_birth_history_table())
         self.prep_for_sql.update(self._build_smoking_and_alcohol_use_table())
         self.prep_for_sql.update(self._build_growth_and_development_table())
@@ -323,6 +323,45 @@ class RegistryRedCapData(RedCapData):
     #                                parent_table_name=parent_table_name,
     #                                checkboxes=checkboxes,
     #                                cols=cols)
+        
+
+    
+    def _build_baseline_and_follow_up_table(self):
+        """Gather and return dataframe representing the baseline_and_follow_up tables.
+    
+        Returns:
+            dict-like: tables ["??","??"]
+        """
+        parent_table_name = 'baseline_and_follow_up'
+    
+        checkboxes = {'historyfrom': None}
+    
+        cols = ['visitcategory',
+                'paperfill',
+                'entertoredcap',
+                'review',
+                'dateentered',
+                'ibddiag1',
+                'ageatdiag',
+                'visittype',
+                'onsetdt',
+                'ageatonset',
+                'ibdtype',
+                'gisurg',
+                'ibdhosp',
+                'ibdmed',
+                'enviquest',
+                'ibddiagchange',
+                'prioribddiag',
+                'newidbdiag',
+                'ancestrynew',
+                'famhisnew',
+                'gisurgnew']
+    
+        return build_generic_table(obj=self,
+                                   parent_table_name=parent_table_name,
+                                   checkboxes=checkboxes,
+                                   cols=cols)
 
 
 
@@ -975,8 +1014,20 @@ class BiorepoRedCapData(RedCapData):
     # TODO: configure BiorepoRedCapData CONF variable
     conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {"ibd_biorepository_sample_database_complete"}
                                                   
-    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = []
-    
+    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = [] #['prior_protocol_number', 'ibdyesno', 'ibdtype',
+                                                                            # 'ibd_immunodeficiencies', 'controldx', 'control_immunodeficiency',
+                                                                            # 'familymembertype', 'familymembergidx', 'gender', 'non_bch_pt',
+                                                                            # 'nsaid_doses', 'sampletype', 'longitudinal', 'timetominus20',
+                                                                            # 'timetominus80', 'hbi_wellbeing', 'hbi_abdpain',
+                                                                            # 'hbi_abdominalmass', 'hbi_complications', 'hbi_abscess',
+                                                                            # 'hbi_fissure', 'hbi_aphthous', 'hbi_arthralgia', 'hbi_nodosum',
+                                                                            # 'hbi_fistula', 'hbi_gangrenosum', 'hbi_uveitis',
+                                                                            # 'sccai_stoolsperday', 'sccai_stoolspernight', 'sccai_urgency',
+                                                                            # 'sccai_blood', 'sccai_wellbeing', 'sccai_arthralgia',
+                                                                            # 'sccai_nodosum', 'sccai_gangrenosum', 'sccai_uveitis',
+                                                                            # 'pucai_abdpain', 'pucai_bleeding', 'pucai_consistency',
+                                                                            # 'pucai_frequency', 'pucai_nocturnal', 'pucai_limitation']
+                                                                            #
     conf['LOAD_REDCAP_DUMP']['INDEX_COLS'] = 'biorepidnumber'
     
     conf = munchify(conf)
