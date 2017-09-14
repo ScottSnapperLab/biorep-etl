@@ -29,12 +29,14 @@ def tree():
 
 
 # Classes
+SchemaRow = namedtuple(typename="SchemaRow", field_names=["table_name", "column_name", "dtype", "categories"], verbose=False, rename=False)
+
 
 class BaseData(object):
     """Organize the common loading, preparation, and storing of generic data dumps."""
 
     conf = None
-    
+
     def __init__(self, data_path, data_dict_path):
         """Load, recode, and verify various sets of information related to a generic data dump.
 
@@ -50,15 +52,15 @@ class BaseData(object):
         self._make_choice_maps()
         self._make_validation_table()
         self._load_data_dump(data_path=data_path)
-        
+
         self.prep_for_sql = Munch()
         self.ready_for_sql = Munch()
-        
+
 
     def build_tables_for_sql(self):
         """Extract and store data as tables in preparation for SQL conversion."""
         raise NotImplementedError('Override this method as appropriate in subclasses.')
-        
+
     def _make_type_conversions(self):
         """Establish common map for type conversion functions."""
         raise NotImplementedError('Override this method as appropriate in subclasses.')
@@ -71,11 +73,11 @@ class BaseData(object):
     def _load_data_dict(self, data_dict_path):
         """Load data dict into dataframe."""
         raise NotImplementedError('Override this method as appropriate in subclasses.')
-        
+
         # set obj value after resetting the original order and setting the index column
         self.data_dict = pd.concat(dfs).sort_index().set_index('Variable / Field Name')
-        
-        
+
+
     def _make_field_map(self):
         """Return Dict to translate field names and field labels."""
         raise NotImplementedError('Override this method as appropriate in subclasses.')
@@ -95,7 +97,7 @@ class BaseData(object):
         raise NotImplementedError('Override this method as appropriate in subclasses.')
 
         self.choices_map = maps
-        
+
     def _infer_crude_dtypes(self, data_path):
         """Use data_dict to infer correct data types for each data column.
 
@@ -103,12 +105,12 @@ class BaseData(object):
             data_path (Path | str): Location of data dump.
 
         Returns:
-            Munch: ``keys in ['','']``
+            Munch: ``keys in ['', '']``
         """
         raise NotImplementedError('Override this method as appropriate in subclasses.')
 
         self.crude_dtypes = crude_dtypes
-        
+
 
     def _make_validation_table(self):
         """Return a dataframe representing the validation columns of the ``data_dict``.
@@ -118,10 +120,10 @@ class BaseData(object):
                            'Text Validation Max']
 
         Modifications:
-            - Columns renamed to: ['type','min','max'].
+            - Columns renamed to: ['type', 'min', 'max'].
             - Rows where all values are null are dropped.
             - Columns where 'type' == null are corrected as rationally as possible.
-            - Values in the ['min','max'] columns are cast into correct types where possible.
+            - Values in the ['min', 'max'] columns are cast into correct types where possible.
 
         Returns:
             pandas.DataFrame
@@ -141,14 +143,14 @@ class BaseData(object):
             pandas.DataFrame
         """
         raise NotImplementedError('Override this method as appropriate in subclasses.')
-            
+
         self.data = self.data.sort_index()
 
 class RedCapData(BaseData):
     """Organize the common loading, preparation, and storing of RedCap data dumps."""
 
     conf = None
-    
+
     def __init__(self, data_path, data_dict_path):
         """Load, recode, and verify various sets of information related to a RedCap dump.
 
@@ -157,12 +159,12 @@ class RedCapData(BaseData):
             data_dict_path (Path): Location of data_dict csv.
         """
         super().__init__(data_path, data_dict_path)
-        
+
     def _make_type_conversions(self):
         """Establish common map for redcap type conversion functions."""
         type_conversions = Munch()
         type_conversions.date_mdy = pd.Timestamp
-        type_conversions.integer = np.float64 # have to use float bc np.integer columns cant have NaN! `:(
+        type_conversions.integer = np.float64  # have to use float bc np.integer columns cant have NaN! `:(
         type_conversions.number = np.float64
         type_conversions.number_1dp = np.float64
         type_conversions.date_dmy = pd.Timestamp
@@ -176,13 +178,13 @@ class RedCapData(BaseData):
     def _load_data_dict(self, data_dict_path):
         """Load data dict into dataframe."""
         data_dict = pd.read_csv(data_dict_path, index_col=None)
-        
+
         # do not retain rows that are "descriptive" type (they are useless and cause errors)
         desc_rows = data_dict['Field Type'].isin(['descriptive'])
         data_dict = data_dict[~desc_rows]
-        
+
         recode_yesno_choice_values(df=data_dict)
-        
+
         # front-fill column "Section Header" using groupby to prevent filling past end of "Form Name"
         # WARNING: this is NOT perfect
         dd_groups = data_dict.groupby(['Form Name'])
@@ -192,11 +194,10 @@ class RedCapData(BaseData):
             df = data_dict.loc[index]
             df['Section Header'].fillna(method='ffill', inplace=True)
             dfs.append(df)
-        
+
         # set obj value after resetting the original order and setting the index column
         self.data_dict = pd.concat(dfs).sort_index().set_index('Variable / Field Name')
-        
-        
+
     def _make_field_map(self):
         """Return Dict to translate field names and field labels."""
         d = Munch()
@@ -215,8 +216,9 @@ class RedCapData(BaseData):
         """Return dict of dicts to translate ``int`` values to their meanings.
 
         Generally, the columns will be those whose data type is categorical.
-        Examples: 'prior_protocol_number', 'gender', etc.
 
+        Examples:
+            'prior_protocol_number', 'gender', etc.
 
         Returns:
             Munch: dict of dicts -> key1 = column_names, key2 = ``int``, value = choice text.
@@ -239,7 +241,7 @@ class RedCapData(BaseData):
             maps[col].update({int_: txt_ for int_, txt_ in parsed_choices})
 
         self.choices_map = maps
-        
+
     def _infer_crude_dtypes(self, data_path):
         """Use data_dict to infer correct data types for each data column.
 
@@ -247,7 +249,7 @@ class RedCapData(BaseData):
             data_path (Path | str): Location of redcap data dump.
 
         Returns:
-            Munch: ``keys in ['','']``
+            Munch: ``keys in ['', '']``
         """
         # Define mapping from redcap type to np.dtype
         rc2np = Munch()
@@ -293,7 +295,7 @@ class RedCapData(BaseData):
         crude_dtypes.numpy_dtypes = Munch({col_name: rc2np[val] for col_name, val in col_redcap_types.items()})
 
         self.crude_dtypes = crude_dtypes
-        
+
 
     def _make_validation_table(self):
         """Return a dataframe representing the validation columns of the ``data_dict``.
@@ -303,10 +305,10 @@ class RedCapData(BaseData):
                            'Text Validation Max']
 
         Modifications:
-            - Columns renamed to: ['type','min','max'].
+            - Columns renamed to: ['type', 'min', 'max'].
             - Rows where all values are null are dropped.
             - Columns where 'type' == null are corrected as rationally as possible.
-            - Values in the ['min','max'] columns are cast into correct types where possible.
+            - Values in the ['min', 'max'] columns are cast into correct types where possible.
 
         Returns:
             pandas.DataFrame
@@ -344,21 +346,22 @@ class RedCapData(BaseData):
             pandas.DataFrame
         """
         index_cols = self.conf.LOAD_DATA_DUMP.INDEX_COLS
-        
+
         data = pd.read_csv(data_path, dtype=self.crude_dtypes.numpy_dtypes, index_col=None)
 
         recast_advanced_dtypes(data=data, data_dict=self.data_dict, crude_dtypes=self.crude_dtypes)
 
         self.data = data
-        
+
         if index_cols:
             self.data = self.data.set_index(index_cols)
-            
+
         self.data = self.data.sort_index()
 
 
 class RegistryRedCapData(RedCapData):
     """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
+
     conf = tree()
     conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {'redcap_event_name',
                                                   'registration_visit_complete',
@@ -368,10 +371,10 @@ class RegistryRedCapData(RedCapData):
 
     conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = ['alb', 'crp', 'esr', 'hct', 'plt', 'wbc']
 
-    conf['LOAD_DATA_DUMP']['INDEX_COLS'] = ['subid','redcap_event_name']
+    conf['LOAD_DATA_DUMP']['INDEX_COLS'] = ['subid', 'redcap_event_name']
 
     conf = munchify(conf)
-                                                  
+
     def __init__(self, data_path, data_dict_path):
         """Load, recode, and verify various sets of information related to a HARVARD_REGISTRY RedCap dump.
 
@@ -380,7 +383,7 @@ class RegistryRedCapData(RedCapData):
             data_dict_path (Path): Location of data_dict csv.
         """
         super().__init__(data_path, data_dict_path)
-        
+
     def build_tables_for_sql(self):
         """Extract and store data as tables in preparation for SQL conversion."""
         self.prep_for_sql.update(self._build_subject_table())
@@ -404,14 +407,13 @@ class RegistryRedCapData(RedCapData):
         self.prep_for_sql.update(self._build_veoibd_questions_table())
         self.prep_for_sql.update(self._build_surgeries_table())
         self.prep_for_sql.update(self._build_hospitalizations_table())
-        
 
     #
     # def _build_XXX_table(self):
     #     """Gather and return dataframe representing the xxxxxxx tables.
     #
     #     Returns:
-    #         dict-like: tables ["??","??"]
+    #         dict-like: tables ["??", "??"]
     #     """
     #     parent_table_name = 'xxxxxxxxxxx'
     #
@@ -423,19 +425,19 @@ class RegistryRedCapData(RedCapData):
     #                                parent_table_name=parent_table_name,
     #                                checkboxes=checkboxes,
     #                                cols=cols)
-        
 
-    
+
+
     def _build_baseline_and_follow_up_table(self):
         """Gather and return dataframe representing the baseline_and_follow_up tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'baseline_and_follow_up'
-    
+
         checkboxes = {'historyfrom': None}
-    
+
         cols = ['visitcategory',
                 'paperfill',
                 'entertoredcap',
@@ -457,7 +459,7 @@ class RegistryRedCapData(RedCapData):
                 'ancestrynew',
                 'famhisnew',
                 'gisurgnew']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
@@ -468,16 +470,16 @@ class RegistryRedCapData(RedCapData):
 
     def _build_jewish_ancetry_table(self):
         """Gather and return dataframe representing the jewish_ancetry tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'jewish_ancetry'
-    
+
         checkboxes = {'jewanctype': None}
-    
+
         cols = ['jeworigin', 'jeworiginnew']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
@@ -486,35 +488,35 @@ class RegistryRedCapData(RedCapData):
 
     def _build_colon_cancer_dysplasia_history_table(self):
         """Gather and return dataframe representing the colon_cancer_dysplasia_history tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'colon_cancer_dysplasia_history'
-    
+
         checkboxes = {}
-    
+
         cols = ['hxcolcanc',
                 'hxpolyps',
                 'hxcoldysp',
                 'coldysptype',
                 'coldyspgrade']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_pucai_table(self):
         """Gather and return dataframe representing the pucai tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'pucai'
-    
+
         checkboxes = {'pucaiobt': None}
-    
+
         cols = ['pucaidoa',
                 'pucaiabpain',
                 'pucairectal',
@@ -524,26 +526,26 @@ class RegistryRedCapData(RedCapData):
                 'pucaiactivity',
                 'pucaiscore',
                 'pucaiseverity']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
-    
+
+
     def _build_uc_ic_characteristics_table(self):
         """Gather and return dataframe representing the uc_ic_characteristics tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'uc_ic_characteristics'
-    
+
         checkboxes = {'ucstudies': 'ucstudiesoth',
                       'procevi': None,
                       'lsideevi': None,
                       'pancoevi': None}
-    
+
         cols = ['ucvisit',
                 'ucvisit2',
                 'proctdis',
@@ -551,23 +553,23 @@ class RegistryRedCapData(RedCapData):
                 'pancodis',
                 'parisuc',
                 'parissev']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_hbai_table(self):
         """Gather and return dataframe representing the hbai tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'hbai'
-    
+
         checkboxes = {'hbaiobt': None,
                       'hbaicomp': None}
-    
+
         cols = ['hbaidoa',
                 'hbaiwell',
                 'hbaiabpain',
@@ -575,47 +577,47 @@ class RegistryRedCapData(RedCapData):
                 'hbaiabmass',
                 'hbaicomp1',
                 'hbaiscore']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_ibd_disease_course_table(self):
         """Gather and return dataframe representing the ibd_disease_course tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         # TODO: decide whether [ibdcoex_type,ibdcoex_other] ought to be treated like a checkbox group
         parent_table_name = 'ibd_disease_course'
-    
+
         checkboxes = {'ibdliverl': None,
                       'ibdmanl': 'otherextraintest',
                       'ibdcondl': 'otherauto'}
-    
+
         cols = ['ibdliver',
                 'ibdman',
                 'ibdcond',
                 'ibdcoex',
                 'ibdcoex_type',
                 'ibdcoex_other']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_growth_and_development_table(self):
         """Gather and return dataframe representing the growth_and_development tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'growth_and_development'
-    
+
         checkboxes = {}
-    
+
         cols = ['wtdiag',
                 'wtdiagdt',
                 'htdiag',
@@ -624,22 +626,22 @@ class RegistryRedCapData(RedCapData):
                 'prevwtdiagdt',
                 'prevhtdiag',
                 'prevhtdiagdt']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_smoking_and_alcohol_use_table(self):
         """Gather and return dataframe representing the smoking_and_alcohol_use tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'smoking_and_alcohol_use'
-    
+
         checkboxes = {}
-    
+
         cols = ['tobacco',
                 'tobaccopacks',
                 'tobaccowhen',
@@ -648,33 +650,33 @@ class RegistryRedCapData(RedCapData):
                 'alcoholdrinks',
                 'alcoholwhen',
                 'alcoholyes']
-    
+
         m =  build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
+
         # Convert appropriate columns to numbers
-        mkfloat = ["tobaccowhen","alcoholwhen"]
+        mkfloat = ["tobaccowhen", "alcoholwhen"]
         for col in mkfloat:
             m[parent_table_name][col] = m[parent_table_name][col].astype(np.float64)
-        
+
         return m
-    
+
     def _build_family_and_birth_history_table(self):
         """Gather and return dataframe representing the family_and_birth_history tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'family_and_birth_history'
-    
+
         checkboxes = {'famcd': None,
                       'famuc': None,
                       'famun': None,
                       'famautotype': 'famautooth',
                       'famimmtype': 'famimmoth'}
-    
+
         cols = ['anyfamauto',
                 'twincdtype',
                 'twinuctype',
@@ -686,22 +688,22 @@ class RegistryRedCapData(RedCapData):
                 'breastdur',
                 'breastdurex',
                 'caesarean']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_hospitalizations_table(self):
         """Gather and return dataframe representing the hospitalizations tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'hospitalizations'
-    
+
         checkboxes = {}
-    
+
         cols = ['hosp_a',
                 'hosptype_a',
                 'hospibdtype_a',
@@ -741,20 +743,20 @@ class RegistryRedCapData(RedCapData):
                 'hosp_m',
                 'hosptype_m',
                 'hospibdtype_m']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_surgeries_table(self):
         """Gather and return dataframe representing the surgeries tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'surgeries'
-    
+
         checkboxes = {'surgerytype_a': None,
                       'surgerytype_b': None,
                       'surgerytype_c': None,
@@ -767,7 +769,7 @@ class RegistryRedCapData(RedCapData):
                       'surgerytype_j': None,
                       'surgerytype_k': None,
                       'surgerytype_l': None}
-    
+
         cols = ['surg_a',
                 'surg_b',
                 'surg_c',
@@ -780,23 +782,23 @@ class RegistryRedCapData(RedCapData):
                 'surg_j',
                 'surg_k',
                 'surg_l']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_veoibd_questions_table(self):
         """Gather and return dataframe representing the veoibd_questions tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'veoibd_questions'
-    
+
         checkboxes = {'crite': None,
                       'oral_perianal': None}
-    
+
         cols = ['country',
                 'dateofarrival',
                 'follic',
@@ -805,22 +807,22 @@ class RegistryRedCapData(RedCapData):
                 'nsaid',
                 'nsaid_doses',
                 'gastroinfect']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_environmental_and_suppl_questions_table(self):
         """Gather and return dataframe representing the environmental_and_suppl_questions tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'environmental_and_suppl_questions'
-    
+
         checkboxes = {}
-    
+
         cols = ['smokeprior',
                 'smokeprior2',
                 'smokepreg',
@@ -828,22 +830,22 @@ class RegistryRedCapData(RedCapData):
                 'antibioticpriormo',
                 'steroidprior',
                 'steroidpriormo']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-    
+
     def _build_adverse_event_intolerance_meds_table(self):
         """Gather and return dataframe representing the adverse_event_intolerance_meds tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'adverse_event_intolerance_meds'
-    
+
         checkboxes = {}
-    
+
         cols = ['meddraae1',
                 'meddraae2',
                 'meddraae3',
@@ -876,22 +878,22 @@ class RegistryRedCapData(RedCapData):
                 'meddraae28',
                 'meddraae29',
                 'othermedraae']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
+
     def _build_discontinued_ibd_meds_table(self):
         """Gather and return dataframe representing the discontinued_ibd_meds tables.
-        
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'discontinued_ibd_meds'
-        
+
         checkboxes = {'medinfosc2': None}
-        
+
         cols = ['mesalamine2',
                 'sulfasa2',
                 'balsalazide2',
@@ -923,24 +925,24 @@ class RegistryRedCapData(RedCapData):
                 'ursodiol2',
                 'cholestyr2',
                 'rifampin2']
-        
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
+
     def _build_ibd_meds_history_table(self):
         """Gather and return dataframe representing the ibd_meds_history tables.
-        
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         # TODO: test that "No, never been on" never ocurs AFTER previous "Yes, current or past use" response
         # TODO: examine whether to subtable out examples of the drug classes
         parent_table_name = 'ibd_meds_history'
-        
+
         checkboxes = {'medinfosc': None}
-        
+
         cols = ['aminosali',
                 'mesalamine',
                 'sulfasa',
@@ -985,23 +987,23 @@ class RegistryRedCapData(RedCapData):
                 'omega3',
                 'probiotic',
                 'fecaltrans']
-        
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
-        
-        
-        
+
+
+
+
     def _build_cd_characteristics_table(self):
         """Gather and return dataframe representing the cd_characteristics tables.
-        
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'cd_characteristics'
-        
+
         checkboxes = {'chohnstudies': 'chohnstudiesoth',
                       'esoevi': None,
                       'stomevi': None,
@@ -1014,7 +1016,7 @@ class RegistryRedCapData(RedCapData):
                       'sigmevi': None,
                       'rectumevi': None,
                       'parisloc': None}
-        
+
         cols = ['crohnvisit',
                 'crohnvisit2',
                 'esoact',
@@ -1044,48 +1046,44 @@ class RegistryRedCapData(RedCapData):
                 'parisclass',
                 'parisbeh',
                 'parisgrow']
-        
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
+
     def _build_pcdai_table(self):
         """Gather and return dataframe representing the pcdai tables.
-        
+
         Returns:
-            dict-like: tables ["pcdaiobt","pcdai"]
+            dict-like: tables ["pcdaiobt", "pcdai"]
         """
         parent_table_name = "pcdai"
         checkboxes = None
         cols = ["pcdaidoa", "pcdaiabpain",
                 "pcdaistools", "pcdaifunction", "pcdaiwt",
                 "pcdaitender", "pcdairectal", "pcdaimanifest",
-                "pcdaiscore", "pcdaiseverity",]
-        
+                "pcdaiscore", "pcdaiseverity"]
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
-        
 
-        
     def _build_subject_table(self):
         """Gather and return dataframe representing the subject table."""
         # TODO: add jewish ancestry columns
         parent_table_name = "subject"
         checkboxes = None
-        cols = ["visitdate","consent","veoibd","dob","gender","race","ethnicity","ibddiag","contact"]
-        
-        
+        cols = ["visitdate", "consent", "veoibd", "dob", "gender", "race", "ethnicity", "ibddiag", "contact"]
+
         m = build_generic_table(obj=self,
                                 parent_table_name=parent_table_name,
                                 checkboxes=checkboxes,
                                 cols=cols)
-        
+
         m.subject = m.subject.drop('redcap_event_name', axis=1)
-        
+
         return m
 
     def _build_labs_table(self):
@@ -1093,45 +1091,45 @@ class RegistryRedCapData(RedCapData):
         # TODO: decide whether or not to keep rows with NaN for all lab results
         parent_table_name = "labs"
         checkboxes = None
-        
-        cols = ["visitcategory","lab_reference","date_labs",
-                "alb","alk","ast","bun",
-                "creatine","crp","esr",
-                "ggt","hct","hemoglobin",
-                "plt","wbc",]
-        
+
+        cols = ["visitcategory", "lab_reference", "date_labs",
+                "alb", "alk", "ast", "bun",
+                "creatine", "crp", "esr",
+                "ggt", "hct", "hemoglobin",
+                "plt", "wbc",]
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
-        
-        
+
 
 class BiorepoRedCapData(RedCapData):
     """Organize the Registry-specific loading, preparation, and storing of RedCap data dumps."""
+
     conf = tree()
-    
+
     # TODO: configure BiorepoRedCapData CONF variable
     conf['INFER_CRUDE_DTYPES']['USE_CATEGORY'] = {"ibd_biorepository_sample_database_complete"}
-                                                  
-    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = [] #['prior_protocol_number', 'ibdyesno', 'ibdtype',
-                                                                            # 'ibd_immunodeficiencies', 'controldx', 'control_immunodeficiency',
-                                                                            # 'familymembertype', 'familymembergidx', 'gender', 'non_bch_pt',
-                                                                            # 'nsaid_doses', 'sampletype', 'longitudinal', 'timetominus20',
-                                                                            # 'timetominus80', 'hbi_wellbeing', 'hbi_abdpain',
-                                                                            # 'hbi_abdominalmass', 'hbi_complications', 'hbi_abscess',
-                                                                            # 'hbi_fissure', 'hbi_aphthous', 'hbi_arthralgia', 'hbi_nodosum',
-                                                                            # 'hbi_fistula', 'hbi_gangrenosum', 'hbi_uveitis',
-                                                                            # 'sccai_stoolsperday', 'sccai_stoolspernight', 'sccai_urgency',
-                                                                            # 'sccai_blood', 'sccai_wellbeing', 'sccai_arthralgia',
-                                                                            # 'sccai_nodosum', 'sccai_gangrenosum', 'sccai_uveitis',
-                                                                            # 'pucai_abdpain', 'pucai_bleeding', 'pucai_consistency',
-                                                                            # 'pucai_frequency', 'pucai_nocturnal', 'pucai_limitation']
-                                                                            #
+
+    conf['MAKE_REDCAP_VALIDATION_TABLE']['MISSING_RCAP_TYPE']['number'] = []  # ['prior_protocol_number', 'ibdyesno', 'ibdtype',
+                                                                              # 'ibd_immunodeficiencies', 'controldx', 'control_immunodeficiency',
+                                                                              # 'familymembertype', 'familymembergidx', 'gender', 'non_bch_pt',
+                                                                              # 'nsaid_doses', 'sampletype', 'longitudinal', 'timetominus20',
+                                                                              # 'timetominus80', 'hbi_wellbeing', 'hbi_abdpain',
+                                                                              # 'hbi_abdominalmass', 'hbi_complications', 'hbi_abscess',
+                                                                              # 'hbi_fissure', 'hbi_aphthous', 'hbi_arthralgia', 'hbi_nodosum',
+                                                                              # 'hbi_fistula', 'hbi_gangrenosum', 'hbi_uveitis',
+                                                                              # 'sccai_stoolsperday', 'sccai_stoolspernight', 'sccai_urgency',
+                                                                              # 'sccai_blood', 'sccai_wellbeing', 'sccai_arthralgia',
+                                                                              # 'sccai_nodosum', 'sccai_gangrenosum', 'sccai_uveitis',
+                                                                              # 'pucai_abdpain', 'pucai_bleeding', 'pucai_consistency',
+                                                                              # 'pucai_frequency', 'pucai_nocturnal', 'pucai_limitation']
+                                                                              #
     conf['LOAD_DATA_DUMP']['INDEX_COLS'] = 'biorepidnumber'
-    
+
     conf = munchify(conf)
-                                                  
+
     def __init__(self, data_path, data_dict_path):
         """Load, recode, and verify various sets of information related to a BIOREPOSITORY RedCap dump.
 
@@ -1140,7 +1138,7 @@ class BiorepoRedCapData(RedCapData):
             data_dict_path (Path): Location of data_dict csv.
         """
         super().__init__(data_path, data_dict_path)
-        
+
         # drop rows whose index == NaN
         not_nans = self.data.reset_index()['biorepidnumber'].notnull()
         self.data = self.data.reset_index()[not_nans].set_index('biorepidnumber')
@@ -1149,18 +1147,16 @@ class BiorepoRedCapData(RedCapData):
 
     def build_tables_for_sql(self):
         """Extract and store data as tables in preparation for SQL conversion."""
-        ## self.prep_for_sql.update(self._build_family_table())
+        # self.prep_for_sql.update(self._build_family_table())
         self.prep_for_sql.update(self._build_subject_table())
         self.prep_for_sql.update(self._build_sample_table())
         self.prep_for_sql.update(self._build_visit_table())
-        
-        
-        
+
     # def _build_XXX_table(self):
     #     """Gather and return dataframe representing the xxxxxxx tables.
     #
     #     Returns:
-    #         dict-like: tables ["??","??"]
+    #         dict-like: tables ["??", "??"]
     #     """
     #     parent_table_name = 'xxxxxxxxxxx'
     #
@@ -1177,7 +1173,7 @@ class BiorepoRedCapData(RedCapData):
     #     """Gather and return dataframe representing the family tables.
     #
     #     Returns:
-    #         dict-like: tables ["??","??"]
+    #         dict-like: tables ["??", "??"]
     #     """
     #     parent_table_name = 'family'
     #
@@ -1190,20 +1186,18 @@ class BiorepoRedCapData(RedCapData):
     #                                checkboxes=checkboxes,
     #                                cols=cols)
 
-
     def _build_subject_table(self):
         """Gather and return dataframe representing the subject tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'subject'
-    
+
         # TODO: go add the correct "other" cols
         checkboxes = {'familymember_ibd': None,
                       'race': None}
-        
-    
+
         cols = ['registryconsent',
                 'biorepconsent',
                 'ibdyesno',
@@ -1233,18 +1227,17 @@ class BiorepoRedCapData(RedCapData):
                 'symptom_onset',
                 'date_of_diagnosis',
                 'consanguinity']
-                
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
                                    cols=cols)
 
-
     def _build_sample_table(self):
         """Gather and return dataframe representing the sample tables.
 
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'sample'
 
@@ -1277,15 +1270,14 @@ class BiorepoRedCapData(RedCapData):
                                    checkboxes=checkboxes,
                                    cols=cols)
 
-
     def _build_visit_table(self):
         """Gather and return dataframe representing the visit tables.
-    
+
         Returns:
-            dict-like: tables ["??","??"]
+            dict-like: tables ["??", "??"]
         """
         parent_table_name = 'visit'
-        
+
         # TODO: go add the correct "other" cols
         checkboxes = {'asa_type': None,
                       'antibiotic_type': None,
@@ -1296,7 +1288,7 @@ class BiorepoRedCapData(RedCapData):
                       'calcineurin_type': None,
                       'otherbiologic_type': None,
                       'othermed_type': None}
-    
+
         cols = ['samplenumber',
                 'sample_date',
                 'nsaid',
@@ -1355,7 +1347,7 @@ class BiorepoRedCapData(RedCapData):
                 'esr',
                 'alb',
                 'notes']
-    
+
         return build_generic_table(obj=self,
                                    parent_table_name=parent_table_name,
                                    checkboxes=checkboxes,
@@ -1365,53 +1357,50 @@ class BiorepoRedCapData(RedCapData):
 ########################## General Helper Functions ##########################
 def build_generic_table(obj, parent_table_name, cols, checkboxes=None):
     """Gather and return dataframe representing a generic table set based on provided variables.
-    
+
     Args:
         obj (RedCapData or subclasses): arg info.
         parent_table_name (str): Name to be used for the table group.
         cols (list): List of column_names after removing those used in ``checkboxes``.
         checkboxes (dict): KEY = checkbox_column_name,
                            VALUE = other_column_name respective to KEY; else: ``None``
-        
-    
+
     Returns:
-        dict-like: tables ["??","??"]
+        dict-like: tables ["??", "??"]
     """
     # TODO: automatically cast columns
     # TODO: test and log when columns when they fail the validation type/min/max
     m = Munch()
-    
+
     if checkboxes is not None:
         for checkbox_base, other_col in checkboxes.items():
             table_name = '{parent_table_name}_{checkbox_base}'.format(parent_table_name=parent_table_name,
                                                                       checkbox_base=checkbox_base)
-                                                                      
-            m[table_name] = make_checkbox_subtable(df=obj.data,
-                                                      col_base_name=checkbox_base,
-                                                      other_col=other_col,
-                                                      foreign_key_cols=None,
-                                                      choice_map=obj.choices_map)
 
-    
-    m[parent_table_name] = obj.data[cols].dropna(axis=0,how='all').copy()
-    
-    
+            m[table_name] = make_checkbox_subtable(df=obj.data,
+                                                   col_base_name=checkbox_base,
+                                                   other_col=other_col,
+                                                   foreign_key_cols=None,
+                                                   choice_map=obj.choices_map)
+
+    m[parent_table_name] = obj.data[cols].dropna(axis=0, how='all').copy()
+
     for col in cols:
         try:
             verbosify(df=m[parent_table_name], col=col, choice_map=obj.choices_map)
         except KeyError:
             pass
-    
+
     for name, table in m.items():
         m[name] = table.sort_index().reset_index()
-        
+
         # auto-cast each column before returning
         # BUT: do not try to REcast the subtable data columns (we already did them)
         if checkboxes is not None:
             cols_to_cast = [c for c in m[name].columns.values if c not in checkboxes.keys()]
         else:
             cols_to_cast = [c for c in m[name].columns.values]
-            
+
         for col in cols_to_cast:
             try:
                 cast_column_by_text_validation_type(df=m[name],
@@ -1423,8 +1412,8 @@ def build_generic_table(obj, parent_table_name, cols, checkboxes=None):
 
     return m
 
-########################## True Recoding Functions ##########################
 
+########################## True Recoding Functions ##########################
 def cast_column_by_text_validation_type(df, col, dd, conversion_map):
     """Perform in-place re-casting of ``df[col]`` by infering the type from the data_dict['Text Validation Type OR Show Slider Number'].
 
@@ -1434,9 +1423,9 @@ def cast_column_by_text_validation_type(df, col, dd, conversion_map):
         dd (dict-like): A redcap data_dict.
         conversion_map (dict-like): Maps value for the ``col`` in dd['Text Validation Type OR Show Slider Number'] to casting function.
     """
-    vtype = dd.loc[col,'Text Validation Type OR Show Slider Number']
+    vtype = dd.loc[col, 'Text Validation Type OR Show Slider Number']
     cast_func = conversion_map[vtype]
-    df.loc[:,col] = df[col].astype(cast_func)
+    df.loc[:, col] = df[col].astype(cast_func)
 
 
 def cast_func_ignore_nulls(x, f):
@@ -1458,9 +1447,9 @@ def cast_func_ignore_nulls(x, f):
 
 def cast_column_as_date(df, col):
     """Perform in-place re-casting of ``df[col]`` to ``pd.Timestamp``.
-    
+
     Ignores nulls.
-    
+
     Args:
         df (pandas.DataFrame): a dataframe.
         col (str): column name in ``df`` to be re-cast.
@@ -1481,7 +1470,7 @@ def cast_column_as_date(df, col):
 
 def cast_column_as_category(df, col):
     """Perform in-place re-casting of ``df[col]`` to ``pendulum.Pendulum``.
-    
+
     Args:
         df (pandas.DataFrame): a dataframe.
         col (str): column name in ``df`` to be re-cast.
@@ -1524,8 +1513,8 @@ def recast_advanced_dtypes(data, data_dict, crude_dtypes):
 
     ## Dates
     [cast_column_as_date(df=data, col=c) for c in recast_as.date]
-    
-    
+
+
 def verbosify(df, col, choice_map=None):
     """Replace the cryptic values (usually integers) of a dataframe column with the verbose values.
 
@@ -1533,7 +1522,7 @@ def verbosify(df, col, choice_map=None):
         df (pandas.dataframe): a dataframe.
         col (str): String used as column index in ``df``.
         choice_map (dict-like): multilevel dict-like tree with level 1 being column names and level 2 being terse to verbose maps.
-        
+
     Returns:
         None: modifies ``df``.
     """
@@ -1551,28 +1540,28 @@ def recode_yesno_choice_values(df):
             return '0, No | 1, Yes'
         else:
             return row['Choices, Calculations, OR Slider Labels']
-            
+
     new_choices = df.apply(recode, axis=1)
     df['Choices, Calculations, OR Slider Labels'] = new_choices
-    
+
 def make_checkbox_subtable(df, col_base_name=None, other_col=None, foreign_key_cols=None, choice_map=None):
     """Return a new pandas.DataFrame obj solving the second normal form problem posed by RedCap checkbox data.
-    
+
     Args:
         df (pandas.DataFrame): Parent table.
         foreign_key_cols (list | str): Column name(s) of parent table to use as the foreign key of subtable: if ``None``, use index.
         col_base_name (str): The text preceeding the ``___`` separator in checkbox group column names.
         other_col (str): If any: the text name of the "if other list here" column linked to the checkbox group.
-        
+
     Returns:
         pandas.DataFrame: subtable of ``df``
     """
     if isinstance(foreign_key_cols, str):
         foreign_key_cols = [foreign_key_cols]
-        
-        
+
+
     main_cols = df[[col for col in df.columns.values if col.split('___')[0] == col_base_name]]
-    
+
     # Excluding `other_col`, create new subtable by melting, droping, and mapping "stuff"
     # # if isinstance(main_cols.index, pd.MultiIndex):
     # #     index_names = main_cols.index.names
@@ -1590,9 +1579,9 @@ def make_checkbox_subtable(df, col_base_name=None, other_col=None, foreign_key_c
 
     # collect only the checked boxes into the new subtable and map box id to values
     checked_boxes = main_cols_.checked_status == 1
-    subtable = main_cols_[checked_boxes][col_base_name].apply(lambda x: x.split('___')[1]).str.replace('_','-')
+    subtable = main_cols_[checked_boxes][col_base_name].apply(lambda x: x.split('___')[1]).str.replace('_', '-')
     subtable = subtable.apply(lambda x: choice_map[col_base_name][x])
-    
+
     # deduplicate values in `other_col` as best as we can
     # TODO: figure out how to handle when the "other_col" contains multiple values
     # TODO: handle deduping better
@@ -1601,8 +1590,6 @@ def make_checkbox_subtable(df, col_base_name=None, other_col=None, foreign_key_c
         other_col_series = df[other_col].dropna().str.lower()
         other_col_series.name = col_base_name
         subtable = pd.concat([subtable,other_col_series], axis=0)
-    
+
     # Cast as category and return
     return subtable.astype('category')
-    
-    
