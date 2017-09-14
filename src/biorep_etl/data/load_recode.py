@@ -294,7 +294,7 @@ class RedCapData(BaseData):
         # Define mapping from redcap type to np.dtype
         rc2np = Munch()
         rc2np.radio = np.float64
-        rc2np.text = np.object
+        rc2np.text = str
         rc2np.checkbox = np.float64
         rc2np.dropdown = np.float64
         rc2np.yesno = np.float64
