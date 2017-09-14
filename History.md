@@ -1,4 +1,13 @@
 
+v2017.09.14.1
+=============
+
+  * Biorepository field non_bch_pt to bch_pt
+  * rc2np.text = str not np.object
+  * added schema support to BaseData
+  * style and formatting
+  * Refactored Data Classes to inherit from database agnostic BaseData
+
 v2017.03.30.1
 =============
 
