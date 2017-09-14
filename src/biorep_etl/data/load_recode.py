@@ -4,7 +4,7 @@
 # Imports
 import os
 from pathlib import Path
-from collections import defaultdict
+from collections import defaultdict, namedtuple
 import logging
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,8 @@ class BaseData(object):
             data_path (Path): Location of csv dump.
             data_dict_path (Path): Location of data_dict csv.
         """
+        self.schema_table = None
+
         self._make_type_conversions()
         self._load_data_dict(data_dict_path=data_dict_path)
         self._make_required_columns()
@@ -145,6 +147,44 @@ class BaseData(object):
         raise NotImplementedError('Override this method as appropriate in subclasses.')
 
         self.data = self.data.sort_index()
+
+    def _build_schema_table(self):
+        """Create a table representing the dtypes for each column in each table stored in ``self.prep_for_sql``."""
+        schema_table = []
+
+        for table_name, table in self.prep_for_sql.items():
+            for column_name in list(table.columns):
+                dtype = table[column_name].dtype
+
+                if dtype == 'category':
+                    categories = str(list(table[column_name].cat.categories))
+                else:
+                    categories = str([])
+
+                schema_table.append(SchemaRow(table_name=table_name,
+                                              column_name=column_name,
+                                              dtype=dtype,
+                                              categories=categories)
+                                    )
+
+        raise NotImplementedError()
+        self.schema_table = schema_table
+
+    def to_csv_tables(self, directory):
+        """Save DataFrames to a series of respective csv files plus a "schema" table.
+
+        ``directory`` and parents will be created if it does not exist.
+
+        directory (``Path``): Path to a directory where the tables will be written.
+        """
+        if self.schema_table is None:
+            self._build_schema_table()
+
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=False)
+
+        raise NotImplementedError()
+
 
 class RedCapData(BaseData):
     """Organize the common loading, preparation, and storing of RedCap data dumps."""
