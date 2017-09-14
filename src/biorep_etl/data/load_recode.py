@@ -1261,7 +1261,7 @@ class BiorepoRedCapData(RedCapData):
                 'neopics_sample',
                 'chb_id',
                 'neopics',
-                'non_bch_pt',
+                'bch_pt',
                 'referring_hospital',
                 'referring_physician',
                 'symptom_onset',
