@@ -1450,6 +1450,9 @@ def build_generic_table(obj, parent_table_name, cols, checkboxes=None):
             except KeyError:
                 pass
 
+    for name in m.keys():
+        m[name] = m[name].drop_duplicates()
+        
     return m
 
 
