@@ -35,7 +35,7 @@ req_paths = ["requirements.pip.txt",
 
 setuptools.setup(
     name="biorep_etl",
-    version="0.0.4",
+    version="version='0.0.5'",
     url="git@github.com:ScottSnapperLab/biorep-etl.git",
 
     author="Gus Dunn",
