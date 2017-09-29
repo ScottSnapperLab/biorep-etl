@@ -1,4 +1,12 @@
 
+v0.0.5 / 2017-09-29
+===================
+
+  * changed version numbering scheme
+  * removed unused directories
+  * incorporate project structure upgrades
+  * fixed pkg name typo
+
 v2017.09.29.1
 =============
 
