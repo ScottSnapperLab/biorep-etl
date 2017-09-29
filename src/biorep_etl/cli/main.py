@@ -60,7 +60,7 @@ def process_config(config=None):
               is_flag=True)
 @click.pass_context
 def run(ctx=None, config=None, home=None):
-    """Command interface to the veoibd-synapse-manager.
+    """Command interface to the biorep_etl.
 
     For command specific help text, call the specific
     command followed by the --help option.
