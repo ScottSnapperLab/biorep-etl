@@ -16,7 +16,7 @@ from munch import Munch, munchify
 import engarde.decorators as ed
 import engarde.checks as ck
 
-import biorep_etl.data.parsers as parsers
+import biorep_etl.data.parsers.pyparsers as parsers
 import biorep_etl.errors as e
 
 # Metadata
