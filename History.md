@@ -1,4 +1,14 @@
 
+v2017.09.29.1
+=============
+
+  * data.validation: added `is_in` and `not_in`
+  * added misc.py
+  * formatting
+  * added data.parsers.bch.biorepository.py
+  * data.parsers: renamed and made pkg
+  * load_recode.build_generic_table: drop_duplicates before returning
+
 v2017.09.14.1
 =============
 
