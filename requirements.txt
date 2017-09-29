@@ -2,17 +2,18 @@
 # $ conda create --name <env_name> -c bioconda -c r -c pandas -c conda-forge -c gusdunn --file <this file>
 
 
-python>=3.5
-graphviz>=2.38.0
+python>=3.5    # not_pipable
+graphviz>=2.38.0    # not_pipable
 pip
 Sphinx
+sphinx_rtd_theme
 jupyter
 jupyter_nbextensions_configurator
 widgetsnbextension
 jupyter_contrib_nbextensions
-pandoc
+pandoc    # not_pipable
 ipython
-
+bumpversion
 
 # NEEDED BY CLI
 snakemake>=3.4.2

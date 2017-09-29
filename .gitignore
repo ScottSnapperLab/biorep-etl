@@ -1,15 +1,25 @@
+# binary document-type files
+*.doc
+*.docx
+*.xls
+*.xlsx
+*.ppt
+*.pptx
+*.pdf
+*.svg
 
 
-# exclude data from source control by default
-/data/**/*.csv*
-/data/**/*.xls*
-/data/**/*.html
-# !/data/
+
 
 # exclude notebooks and reports from source control by default
 /notebooks/
 /reports/
 
+# LibreOffice lock files
+.~lock.*
+
+# Notebook files
+notebooks/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
@@ -17,9 +27,6 @@ __pycache__/
 
 # C extensions
 *.so
-
-## Binary files
-# *.svg
 
 # Distribution / packaging
 .Python
@@ -88,5 +95,8 @@ target/
 # IPython NB Checkpoints
 .ipynb_checkpoints/
 
+# exclude data from source control by default
+/data/
 
+references/
 

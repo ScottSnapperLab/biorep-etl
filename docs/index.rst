@@ -12,9 +12,12 @@ Contents:
    :maxdepth: 2
 
    getting-started
+   usage
    commands
-
-
+   contributing
+   authors
+   history
+   modules
 
 Indices and tables
 ==================
